@@ -1,6 +1,7 @@
 "use client";
 
 import { ShieldCheck, Github } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function SiteHeader() {
   return (
@@ -20,21 +21,24 @@ export function SiteHeader() {
           </div>
         </div>
 
-        <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-          <a href="#how-it-works" className="transition-colors hover:text-foreground">
-            How it works
-          </a>
-          <a href="#methodology" className="transition-colors hover:text-foreground">
-            Methodology
-          </a>
-          <a
-            href="#"
-            className="flex items-center gap-1.5 transition-colors hover:text-foreground"
-          >
-            <Github className="h-4 w-4" />
-            Source
-          </a>
-        </nav>
+        <div className="flex items-center gap-3">
+          <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
+            <a href="#how-it-works" className="transition-colors hover:text-foreground">
+              How it works
+            </a>
+            <a href="#methodology" className="transition-colors hover:text-foreground">
+              Methodology
+            </a>
+            <a
+              href="#"
+              className="flex items-center gap-1.5 transition-colors hover:text-foreground"
+            >
+              <Github className="h-4 w-4" />
+              Source
+            </a>
+          </nav>
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

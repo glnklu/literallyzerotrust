@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
 import { SearchBar } from "@/components/search-bar";
 import { PromptSuggestions } from "@/components/prompt-suggestions";
+import { FigureBrowser } from "@/components/figure-browser";
 import { AnswerSkeleton } from "@/components/answer/answer-skeleton";
 import { AnswerView } from "@/components/answer/answer-view";
 import { AnswerEmptyState } from "@/components/answer/answer-empty-state";
@@ -51,6 +52,7 @@ export default function Home() {
             <SearchBar onSearch={runSearch} />
           </div>
           <PromptSuggestions onSelect={runSearch} />
+          <FigureBrowser onSelect={runSearch} />
         </>
       )}
 

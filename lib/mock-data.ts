@@ -10,7 +10,8 @@
 // -----------------------------------------------------------------------------
 
 import { Globe2, Landmark, Cpu, History } from "lucide-react";
-import type { Answer, Figure, PromptCategory, Source } from "@/lib/types";
+import type { Answer, PromptCategory, Source } from "@/lib/types";
+import { FIGURES, toAnswerFigure } from "@/lib/figures";
 
 export type {
   SourceType,
@@ -26,32 +27,21 @@ export type {
 } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
-// Figures
+// Figures — derived from the shared registry (lib/figures.ts) so the
+// candidate browser and this mock data can never describe the same person
+// two different ways.
 // ---------------------------------------------------------------------------
 
-const trump: Figure = {
-  id: "trump",
-  name: "Donald Trump",
-  role: "President of the United States",
-  initials: "DT",
-  accent: "from-red-500/15 to-blue-500/15",
-};
+function figureById(id: string) {
+  const profile = FIGURES.find((f) => f.id === id);
+  if (!profile) throw new Error(`Unknown figure id in mock data: ${id}`);
+  return toAnswerFigure(profile);
+}
 
-const starmer: Figure = {
-  id: "starmer",
-  name: "Keir Starmer",
-  role: "Prime Minister of the United Kingdom",
-  initials: "KS",
-  accent: "from-rose-500/15 to-amber-500/15",
-};
-
-const musk: Figure = {
-  id: "musk",
-  name: "Elon Musk",
-  role: "CEO, Tesla & xAI",
-  initials: "EM",
-  accent: "from-slate-500/15 to-cyan-500/15",
-};
+const trump = figureById("trump");
+const starmer = figureById("starmer");
+const musk = figureById("musk");
+const harris = figureById("harris");
 
 // ---------------------------------------------------------------------------
 // Answer 1 — Trump / tariffs
@@ -489,10 +479,142 @@ const answerMusk: Answer = {
   ],
 };
 
+// ---------------------------------------------------------------------------
+// Answer 4 — Harris / AI regulation
+// ---------------------------------------------------------------------------
+
+const harrisSources: Source[] = [
+  {
+    id: "src-harris-1",
+    title: "Remarks at the UK AI Safety Summit",
+    publisher: "The White House (official transcript)",
+    date: "2023-11-01",
+    type: "transcript",
+    url: "#preview-source-white-house-summit-remarks",
+    confidence: 96,
+  },
+  {
+    id: "src-harris-2",
+    title: "Remarks on the Executive Order on Safe, Secure, and Trustworthy AI",
+    publisher: "White House Press Office (transcript)",
+    date: "2023-10-30",
+    type: "transcript",
+    url: "#preview-source-white-house-eo-remarks",
+    confidence: 97,
+  },
+  {
+    id: "src-harris-3",
+    title: "Announcement of the U.S. AI Safety Institute",
+    publisher: "NIST / White House (press release)",
+    date: "2023-11-01",
+    type: "press-release",
+    url: "#preview-source-nist-ai-safety-institute",
+    confidence: 94,
+  },
+  {
+    id: "src-harris-4",
+    title: "Interview on AI and Algorithmic Bias",
+    publisher: "Network interview (transcript)",
+    date: "2023-11-03",
+    type: "interview",
+    url: "#preview-source-network-ai-bias-interview",
+    confidence: 83,
+  },
+];
+
+const answerHarris: Answer = {
+  id: "harris-ai-regulation",
+  query: "What is Kamala Harris's stance on AI regulation?",
+  figure: harris,
+  generatedAt: "2026-09-20T14:11:00Z",
+  mode: "preview",
+  summary:
+    "As Vice President, Harris framed AI regulation around both near-term, concrete harms — algorithmic bias, disinformation, fraud — and longer-term frontier-model risk, and publicly represented the administration's two main 2023 actions: an executive order requiring safety testing from frontier developers, and a newly announced U.S. AI Safety Institute.",
+  themes: [
+    {
+      id: "theme-1",
+      heading: "Distinguishing near-term harms from existential risk",
+      claims: [
+        {
+          id: "claim-1-1",
+          text: "At the UK's 2023 AI Safety Summit, Harris argued that AI safety discussions should not focus solely on long-term, catastrophic risk.",
+          sourceIds: ["src-harris-1"],
+        },
+        {
+          id: "claim-1-2",
+          text: "She pointed to present-day harms — biased lending or hiring algorithms, disinformation, and fraud — as safety issues deserving equal attention.",
+          sourceIds: ["src-harris-1", "src-harris-4"],
+        },
+      ],
+    },
+    {
+      id: "theme-2",
+      heading: "The AI executive order as the domestic action",
+      claims: [
+        {
+          id: "claim-2-1",
+          text: "She delivered remarks alongside the administration's October 2023 executive order on AI.",
+          sourceIds: ["src-harris-2"],
+        },
+        {
+          id: "claim-2-2",
+          text: "That order was described as requiring frontier AI developers to share safety test results with the federal government before public release.",
+          sourceIds: ["src-harris-2"],
+        },
+      ],
+    },
+    {
+      id: "theme-3",
+      heading: "A new federal body to operationalize AI safety",
+      claims: [
+        {
+          id: "claim-3-1",
+          text: "Harris announced the creation of the U.S. AI Safety Institute during the same UK summit trip.",
+          sourceIds: ["src-harris-3"],
+        },
+        {
+          id: "claim-3-2",
+          text: "The institute was framed as the body responsible for developing testing and evaluation standards for AI systems.",
+          sourceIds: ["src-harris-3"],
+        },
+      ],
+    },
+  ],
+  quotes: [
+    {
+      id: "q-harris-1",
+      text: "Illustrative excerpt — when a woman is denied a business loan because of a biased AI algorithm, that is a threat to her safety too.",
+      date: "2023-11-01",
+      context: "Remarks at the UK AI Safety Summit",
+      sourceId: "src-harris-1",
+      verified: true,
+      verificationMethod: "snippet",
+    },
+    {
+      id: "q-harris-2",
+      text: "Illustrative excerpt — we simply cannot wait for international consensus before we act, so today the President signed an executive order for the safe, secure, and trustworthy development of AI.",
+      date: "2023-10-30",
+      context: "Remarks on the AI executive order",
+      sourceId: "src-harris-2",
+      verified: true,
+      verificationMethod: "full-page",
+    },
+  ],
+  sources: harrisSources,
+  stanceShift: undefined,
+  relatedPrompts: [
+    "How did other countries respond to the U.S. AI Safety Institute announcement?",
+    "What does the AI executive order require of frontier AI developers?",
+    "How does Harris's framing of AI harms compare to Elon Musk's?",
+    "What have civil rights groups said about algorithmic bias in AI?",
+  ],
+};
+
 export const answers: Record<string, Answer> = {
   [answerTrump.id]: answerTrump,
   [answerStarmer.id]: answerStarmer,
   [answerMusk.id]: answerMusk,
+  [answerHarris.id]: answerHarris,
 };
 
 // ---------------------------------------------------------------------------
@@ -523,7 +645,7 @@ export const promptCategories: PromptCategory[] = [
     icon: Cpu,
     prompts: [
       { text: "What are Elon Musk's recent statements regarding AI safety?", answerId: "musk-ai-safety" },
-      { text: "What is Kamala Harris's stance on AI regulation?", answerId: "musk-ai-safety" },
+      { text: "What is Kamala Harris's stance on AI regulation?", answerId: "harris-ai-regulation" },
     ],
   },
   {
@@ -539,6 +661,7 @@ export const promptCategories: PromptCategory[] = [
 export function findAnswerForQuery(query: string): Answer {
   const q = query.toLowerCase();
   if (q.includes("starmer") || q.includes("green energy")) return answers["starmer-green-energy"];
+  if (q.includes("harris") || q.includes("kamala")) return answers["harris-ai-regulation"];
   if (q.includes("musk") || q.includes("ai regulation") || q.includes("ai safety")) return answers["musk-ai-safety"];
   return answers["trump-tariffs"];
 }

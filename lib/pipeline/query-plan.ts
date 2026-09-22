@@ -15,23 +15,12 @@
 // -----------------------------------------------------------------------------
 
 import { domainsForTiers, withOrganizationDomains, type TrustTier } from "@/lib/search/trusted-sources";
+import { findFigureByAlias } from "@/lib/figures";
 
-interface KnownFigure {
+interface FigureGuess {
   canonicalName: string;
   orgDomains?: string[];
 }
-
-/** Extend as needed — this seeds figure-specific "organization-official" domains. */
-const KNOWN_FIGURES: Record<string, KnownFigure> = {
-  trump: { canonicalName: "Donald Trump" },
-  "donald trump": { canonicalName: "Donald Trump" },
-  starmer: { canonicalName: "Keir Starmer", orgDomains: ["labour.org.uk"] },
-  "keir starmer": { canonicalName: "Keir Starmer", orgDomains: ["labour.org.uk"] },
-  musk: { canonicalName: "Elon Musk", orgDomains: ["tesla.com", "x.ai", "xai.com"] },
-  "elon musk": { canonicalName: "Elon Musk", orgDomains: ["tesla.com", "x.ai", "xai.com"] },
-  harris: { canonicalName: "Kamala Harris" },
-  "kamala harris": { canonicalName: "Kamala Harris" },
-};
 
 const QUESTION_STOPWORDS = new Set([
   "what",
@@ -65,12 +54,9 @@ export interface QueryPlan {
   searchQueries: PlannedQuery[];
 }
 
-function guessFigure(rawQuery: string): KnownFigure | undefined {
-  const lower = rawQuery.toLowerCase();
-  const match = Object.keys(KNOWN_FIGURES)
-    .sort((a, b) => b.length - a.length) // longest alias first ("donald trump" before "trump")
-    .find((alias) => lower.includes(alias));
-  if (match) return KNOWN_FIGURES[match];
+function guessFigure(rawQuery: string): FigureGuess | undefined {
+  const known = findFigureByAlias(rawQuery);
+  if (known) return { canonicalName: known.name, orgDomains: known.orgDomains };
 
   // Fallback: two-or-more consecutive capitalized words, e.g. "Keir Starmer"
   const capNameMatch = rawQuery.match(/\b([A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)+)\b/);
