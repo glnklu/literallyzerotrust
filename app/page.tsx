@@ -78,6 +78,16 @@ export default function Home() {
               />
             )}
 
+            {state === "result" && result?.status === "demo_not_covered" && (
+              <AnswerEmptyState
+                variant="demo"
+                query={result.query}
+                figureGuess={result.figureGuess}
+                onRetry={() => runSearch(result.query)}
+                onTrySample={runSearch}
+              />
+            )}
+
             {state === "result" && result?.status === "error" && (
               <AnswerEmptyState
                 variant="error"

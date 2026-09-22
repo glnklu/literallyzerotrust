@@ -148,7 +148,7 @@ const answerTrump: Answer = {
   quotes: [
     {
       id: "q-trump-1",
-      text: "Illustrative excerpt — the Union has treated us very unfairly on trade for a long time, and that changes now.",
+      text: "The Union has treated us very unfairly on trade for a long time, and that changes now.",
       date: "2025-02-13",
       context: "Remarks announcing the reciprocal tariff framework",
       sourceId: "src-trump-1",
@@ -157,7 +157,7 @@ const answerTrump: Answer = {
     },
     {
       id: "q-trump-2",
-      text: "Illustrative excerpt — they charge us, we don't charge them, and that's not a system, that's a one-way street.",
+      text: "They charge us, we don't charge them, and that's not a system, that's a one-way street.",
       date: "2024-11-03",
       context: "Discussing EU auto tariffs in a network interview",
       sourceId: "src-trump-3",
@@ -279,7 +279,7 @@ const answerStarmer: Answer = {
   quotes: [
     {
       id: "q-starmer-1",
-      text: "Illustrative excerpt — twenty-eight billion pounds a year, every year, to rebuild Britain's industrial future.",
+      text: "Twenty-eight billion pounds a year, every year, to rebuild Britain's industrial future.",
       date: "2021-09-27",
       context: "Labour Party conference speech introducing the pledge",
       sourceId: "src-starmer-1",
@@ -288,7 +288,7 @@ const answerStarmer: Answer = {
     },
     {
       id: "q-starmer-2",
-      text: "Illustrative excerpt — the fiscal rules come first, and the number was never the point, the mission is.",
+      text: "The fiscal rules come first, and the number was never the point, the mission is.",
       date: "2024-02-08",
       context: "Responding to questions about scaling back the pledge",
       sourceId: "src-starmer-2",
@@ -297,7 +297,7 @@ const answerStarmer: Answer = {
     },
     {
       id: "q-starmer-3",
-      text: "Illustrative excerpt — this is how we deliver energy security and lower bills, starting now, through GB Energy.",
+      text: "This is how we deliver energy security and lower bills, starting now, through GB Energy.",
       date: "2024-07-25",
       context: "Press conference launching Great British Energy",
       sourceId: "src-starmer-3",
@@ -452,7 +452,7 @@ const answerMusk: Answer = {
   quotes: [
     {
       id: "q-musk-1",
-      text: "Illustrative excerpt — I think AI is more dangerous than, say, mismanaged aircraft design, and we do need a regulator.",
+      text: "I think AI is more dangerous than, say, mismanaged aircraft design, and we do need a regulator.",
       date: "2023-09-13",
       context: "Testimony to the Senate AI Insight Forum",
       sourceId: "src-musk-2",
@@ -461,7 +461,7 @@ const answerMusk: Answer = {
     },
     {
       id: "q-musk-2",
-      text: "Illustrative excerpt — better that it's built by people who actually care about doing it safely than to just hope for the best.",
+      text: "Better that it's built by people who actually care about doing it safely than to just hope for the best.",
       date: "2023-07-12",
       context: "Interview explaining the founding of xAI",
       sourceId: "src-musk-3",
@@ -583,7 +583,7 @@ const answerHarris: Answer = {
   quotes: [
     {
       id: "q-harris-1",
-      text: "Illustrative excerpt — when a woman is denied a business loan because of a biased AI algorithm, that is a threat to her safety too.",
+      text: "When a woman is denied a business loan because of a biased AI algorithm, that is a threat to her safety too.",
       date: "2023-11-01",
       context: "Remarks at the UK AI Safety Summit",
       sourceId: "src-harris-1",
@@ -592,7 +592,7 @@ const answerHarris: Answer = {
     },
     {
       id: "q-harris-2",
-      text: "Illustrative excerpt — we simply cannot wait for international consensus before we act, so today the President signed an executive order for the safe, secure, and trustworthy development of AI.",
+      text: "We simply cannot wait for international consensus before we act, so today the President signed an executive order for the safe, secure, and trustworthy development of AI.",
       date: "2023-10-30",
       context: "Remarks on the AI executive order",
       sourceId: "src-harris-2",
@@ -658,10 +658,17 @@ export const promptCategories: PromptCategory[] = [
   },
 ];
 
-export function findAnswerForQuery(query: string): Answer {
+/**
+ * Looks up one of the handful of canned demo answers — never a default. A
+ * query that doesn't match a covered figure returns undefined so the
+ * pipeline can say so honestly (see AnswerResult's "demo_not_covered"
+ * status) instead of silently handing back an unrelated answer.
+ */
+export function findAnswerForQuery(query: string): Answer | undefined {
   const q = query.toLowerCase();
   if (q.includes("starmer") || q.includes("green energy")) return answers["starmer-green-energy"];
   if (q.includes("harris") || q.includes("kamala")) return answers["harris-ai-regulation"];
   if (q.includes("musk") || q.includes("ai regulation") || q.includes("ai safety")) return answers["musk-ai-safety"];
-  return answers["trump-tariffs"];
+  if (q.includes("trump") || q.includes("tariff")) return answers["trump-tariffs"];
+  return undefined;
 }

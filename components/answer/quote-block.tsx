@@ -44,7 +44,7 @@ export function QuoteBlock({ answer, onOpenSource, activeSourceId }: QuoteBlockP
       <CardHeader>
         <CardTitle>In Their Own Words</CardTitle>
         <CardDescription>
-          Verbatim excerpts, checked against the source rather than taken on the model&apos;s word.
+          Verbatim excerpts, each checked against the original source rather than taken at face value.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

@@ -67,6 +67,20 @@ function guessFigure(rawQuery: string): FigureGuess | undefined {
       return { canonicalName: candidate };
     }
   }
+
+  // Further fallback: a single capitalized word, for mononyms (e.g. "Pink",
+  // "Madonna", "Drake"). Skips the question's first word, since that's
+  // almost always just sentence-initial capitalization ("What...", "How...")
+  // rather than a name. This is a heuristic, not real NER — it can still
+  // misfire on a capitalized non-name (a place, a brand), but for a
+  // one-word subject it's the best signal available without an LLM call.
+  const singleCapMatches = [...rawQuery.matchAll(/\b[A-Z][a-zA-Z'-]{2,}\b/g)];
+  const isFirstWord = (index: number) => rawQuery.slice(0, index).trim().length === 0;
+  const mononym = singleCapMatches.find(
+    (m) => !isFirstWord(m.index ?? 0) && !QUESTION_STOPWORDS.has(m[0].toLowerCase())
+  );
+  if (mononym) return { canonicalName: mononym[0] };
+
   return undefined;
 }
 
@@ -109,10 +123,13 @@ export function planQueries(rawQuery: string): QueryPlan {
       tierLabel: "major-news",
     },
     // Unrestricted pass — catches trusted-tier pages our explicit domain
-    // lists missed. Results outside the registry are scored "unverified"
-    // by lib/search/trusted-sources.ts and dropped by MIN_CITABLE_CONFIDENCE.
+    // lists missed. Uses the raw, unparsed question rather than `subject`:
+    // it's a hedge against a bad figure/topic guess mangling the query, so
+    // at least one search always runs on clean text. Results outside the
+    // registry are scored "unverified" by lib/search/trusted-sources.ts and
+    // dropped by MIN_CITABLE_CONFIDENCE.
     {
-      query: subject,
+      query: rawQuery,
       tierLabel: "broad",
     },
   ];

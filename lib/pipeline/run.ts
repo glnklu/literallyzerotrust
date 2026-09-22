@@ -57,6 +57,20 @@ export function isLivePipelineConfigured(): boolean {
   return isSearchConfigured() && isSynthesisConfigured();
 }
 
+/**
+ * The offline demo only has canned answers for a handful of figures — it
+ * must never paper over a miss by handing back an unrelated one (that's
+ * exactly the kind of confident-sounding wrong answer this app exists to
+ * avoid). figureGuess costs nothing here since planQueries does no network
+ * I/O; it's just the same heuristic used to build live search queries.
+ */
+function mockFallback(query: string): AnswerResult {
+  const answer = findAnswerForQuery(query);
+  if (answer) return { status: "ok", answer };
+  const { figureGuess } = planQueries(query);
+  return { status: "demo_not_covered", query, figureGuess };
+}
+
 export async function generateAnswer(rawQuery: string): Promise<AnswerResult> {
   const query = rawQuery.trim();
   if (!query) {
@@ -64,7 +78,7 @@ export async function generateAnswer(rawQuery: string): Promise<AnswerResult> {
   }
 
   if (!isLivePipelineConfigured()) {
-    return { status: "ok", answer: findAnswerForQuery(query) };
+    return mockFallback(query);
   }
 
   const plan = planQueries(query);
@@ -73,7 +87,7 @@ export async function generateAnswer(rawQuery: string): Promise<AnswerResult> {
   if (retrieval.providerUnavailable) {
     // Search API rejected every request the same way (e.g. bad/missing
     // key) — treat as "not configured" rather than surfacing a scary error.
-    return { status: "ok", answer: findAnswerForQuery(query) };
+    return mockFallback(query);
   }
 
   if (retrieval.documents.length < MIN_SOURCES_FOR_ANSWER) {

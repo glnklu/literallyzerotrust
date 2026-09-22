@@ -123,4 +123,12 @@ export interface PromptCategory {
 export type AnswerResult =
   | { status: "ok"; answer: Answer }
   | { status: "insufficient_sources"; query: string; figureGuess?: string; sourcesFound: number }
+  /**
+   * Live search/synthesis isn't configured, and this query isn't one of the
+   * handful of figures the offline demo has a canned answer for. Distinct
+   * from "insufficient_sources" (a live search that came up short) so the
+   * UI can explain the *actual* reason honestly instead of implying a
+   * search happened when it didn't.
+   */
+  | { status: "demo_not_covered"; query: string; figureGuess?: string }
   | { status: "error"; query: string; message: string };

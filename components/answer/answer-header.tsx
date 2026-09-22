@@ -55,12 +55,12 @@ export function AnswerHeader({ answer, onOpenSources }: AnswerHeaderProps) {
         {answer.mode === "preview" ? (
           <Badge variant="accent" className="gap-1.5">
             <FlaskConical className="h-3 w-3" />
-            Preview data — illustrative, not verified statements
+            Preview mode — sample content, not real quotes
           </Badge>
         ) : (
           <Badge variant="shift" className="gap-1.5">
             <ShieldAlert className="h-3 w-3" />
-            AI-synthesized from live sources — verify against links before citing
+            Pulled from live sources — double-check the links before citing
           </Badge>
         )}
         {answer.quotes.length > 0 && (
