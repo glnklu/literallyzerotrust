@@ -2,8 +2,8 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FlaskConical, LibraryBig, Clock3 } from "lucide-react";
-import type { Answer } from "@/lib/mock-data";
+import { FlaskConical, ShieldAlert, LibraryBig, Clock3 } from "lucide-react";
+import type { Answer } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface AnswerHeaderProps {
@@ -50,10 +50,17 @@ export function AnswerHeader({ answer, onOpenSources }: AnswerHeaderProps) {
       </h2>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Badge variant="accent" className="gap-1.5">
-          <FlaskConical className="h-3 w-3" />
-          Preview data — illustrative, not verified statements
-        </Badge>
+        {answer.mode === "preview" ? (
+          <Badge variant="accent" className="gap-1.5">
+            <FlaskConical className="h-3 w-3" />
+            Preview data — illustrative, not verified statements
+          </Badge>
+        ) : (
+          <Badge variant="shift" className="gap-1.5">
+            <ShieldAlert className="h-3 w-3" />
+            AI-synthesized from live sources — verify against links before citing
+          </Badge>
+        )}
         <Badge variant="muted" className="gap-1.5">
           <Clock3 className="h-3 w-3" />
           Generated {relativeTime(answer.generatedAt)}

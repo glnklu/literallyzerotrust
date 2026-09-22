@@ -9,89 +9,21 @@
 // Step 2 replaces this whole module with real search + citation retrieval.
 // -----------------------------------------------------------------------------
 
-import type { LucideIcon } from "lucide-react";
-import {
-  Globe2,
-  Landmark,
-  Cpu,
-  History,
-} from "lucide-react";
+import { Globe2, Landmark, Cpu, History } from "lucide-react";
+import type { Answer, Figure, PromptCategory, Source } from "@/lib/types";
 
-export type SourceType =
-  | "transcript"
-  | "video"
-  | "press-release"
-  | "vote-record"
-  | "interview";
-
-export interface Source {
-  id: string;
-  title: string;
-  publisher: string;
-  date: string;
-  type: SourceType;
-  url: string;
-  confidence: number; // 0-100, editorial confidence that this is an official/primary source
-  timestamp?: string; // for video sources, e.g. "12:04"
-}
-
-export interface ThemeSection {
-  id: string;
-  heading: string;
-  body: string;
-  sourceIds: string[];
-}
-
-export interface Quote {
-  id: string;
-  text: string;
-  date: string;
-  context: string;
-  sourceId: string;
-}
-
-export type Stance = "for" | "against" | "mixed" | "neutral";
-
-export interface StancePoint {
-  date: string;
-  label: string;
-  summary: string;
-  stance: Stance;
-  sourceId: string;
-}
-
-export interface StanceShift {
-  topic: string;
-  points: StancePoint[];
-}
-
-export interface Figure {
-  id: string;
-  name: string;
-  role: string;
-  initials: string;
-  accent: string; // tailwind gradient classes
-}
-
-export interface Answer {
-  id: string;
-  query: string;
-  figure: Figure;
-  generatedAt: string;
-  summary: string;
-  themes: ThemeSection[];
-  quotes: Quote[];
-  sources: Source[];
-  stanceShift?: StanceShift;
-  relatedPrompts: string[];
-}
-
-export interface PromptCategory {
-  id: string;
-  label: string;
-  icon: LucideIcon;
-  prompts: { text: string; answerId: string }[];
-}
+export type {
+  SourceType,
+  Source,
+  ThemeSection,
+  Quote,
+  Stance,
+  StancePoint,
+  StanceShift,
+  Figure,
+  Answer,
+  PromptCategory,
+} from "@/lib/types";
 
 // ---------------------------------------------------------------------------
 // Figures
@@ -170,6 +102,7 @@ const answerTrump: Answer = {
   query: "What has Donald Trump said about trade tariffs with Europe?",
   figure: trump,
   generatedAt: "2026-09-20T14:02:00Z",
+  mode: "preview",
   summary:
     "Across public remarks spanning 2018 to 2025, Trump has consistently framed EU trade practices as unfair to U.S. manufacturers and has repeatedly used or threatened tariffs — first on steel and aluminum, later expanding to autos and a broader 'reciprocal tariff' framework — as leverage to renegotiate terms.",
   themes: [
@@ -266,6 +199,7 @@ const answerStarmer: Answer = {
   query: "How has Keir Starmer's position on green energy changed since 2021?",
   figure: starmer,
   generatedAt: "2026-09-20T14:05:00Z",
+  mode: "preview",
   summary:
     "The headline commitment — a large-scale, state-backed green investment plan — has been publicly scaled back once on cost grounds since 2021, while the underlying policy goal (a clean-power grid and a public energy company) has remained and was reaffirmed after entering government.",
   themes: [
@@ -402,6 +336,7 @@ const answerMusk: Answer = {
   query: "What are Elon Musk's recent statements regarding AI safety?",
   figure: musk,
   generatedAt: "2026-09-20T14:08:00Z",
+  mode: "preview",
   summary:
     "Musk has publicly described advanced AI as a significant risk warranting external oversight — including signing a call for a development pause and testifying in favor of regulation — while simultaneously founding and scaling an AI company, a tension he has addressed directly in interviews as 'safer to build it than let others build it unsupervised.'",
   themes: [

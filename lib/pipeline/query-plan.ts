@@ -1,0 +1,135 @@
+// -----------------------------------------------------------------------------
+// QUERY PLANNER
+// -----------------------------------------------------------------------------
+// Turns "What has Donald Trump said about trade tariffs with Europe?" into a
+// handful of targeted searches — one per trust tier — instead of a single
+// generic web search. This is what makes retrieval favor c-span.org and
+// whitehouse.gov over a random blog's summary of what someone said.
+//
+// Figure detection here is deliberately simple (a small known-figure
+// registry + a capitalized-name-sequence fallback) rather than an LLM call:
+// it keeps every search request's latency and cost to zero until retrieval
+// actually needs to hit the network, and query planning doesn't need to be
+// perfect — the domain-tiered retrieval step and the synthesis step both
+// tolerate an imprecise guess.
+// -----------------------------------------------------------------------------
+
+import { domainsForTiers, withOrganizationDomains, type TrustTier } from "@/lib/search/trusted-sources";
+
+interface KnownFigure {
+  canonicalName: string;
+  orgDomains?: string[];
+}
+
+/** Extend as needed — this seeds figure-specific "organization-official" domains. */
+const KNOWN_FIGURES: Record<string, KnownFigure> = {
+  trump: { canonicalName: "Donald Trump" },
+  "donald trump": { canonicalName: "Donald Trump" },
+  starmer: { canonicalName: "Keir Starmer", orgDomains: ["labour.org.uk"] },
+  "keir starmer": { canonicalName: "Keir Starmer", orgDomains: ["labour.org.uk"] },
+  musk: { canonicalName: "Elon Musk", orgDomains: ["tesla.com", "x.ai", "xai.com"] },
+  "elon musk": { canonicalName: "Elon Musk", orgDomains: ["tesla.com", "x.ai", "xai.com"] },
+  harris: { canonicalName: "Kamala Harris" },
+  "kamala harris": { canonicalName: "Kamala Harris" },
+};
+
+const QUESTION_STOPWORDS = new Set([
+  "what",
+  "how",
+  "has",
+  "have",
+  "is",
+  "are",
+  "does",
+  "did",
+  "said",
+  "say",
+  "says",
+  "about",
+  "since",
+  "position",
+  "stance",
+  "regarding",
+]);
+
+export interface PlannedQuery {
+  query: string;
+  includeDomains?: string[];
+  tierLabel: TrustTier | "broad";
+}
+
+export interface QueryPlan {
+  rawQuery: string;
+  figureGuess?: string;
+  organizationDomains?: string[];
+  searchQueries: PlannedQuery[];
+}
+
+function guessFigure(rawQuery: string): KnownFigure | undefined {
+  const lower = rawQuery.toLowerCase();
+  const match = Object.keys(KNOWN_FIGURES)
+    .sort((a, b) => b.length - a.length) // longest alias first ("donald trump" before "trump")
+    .find((alias) => lower.includes(alias));
+  if (match) return KNOWN_FIGURES[match];
+
+  // Fallback: two-or-more consecutive capitalized words, e.g. "Keir Starmer"
+  const capNameMatch = rawQuery.match(/\b([A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)+)\b/);
+  if (capNameMatch) {
+    const candidate = capNameMatch[1];
+    const words = candidate.toLowerCase().split(/\s+/);
+    if (!words.every((w) => QUESTION_STOPWORDS.has(w))) {
+      return { canonicalName: candidate };
+    }
+  }
+  return undefined;
+}
+
+/** Strips the figure's name and common question scaffolding to leave a topic phrase. */
+function extractTopic(rawQuery: string, figureName?: string): string {
+  let topic = rawQuery;
+  if (figureName) {
+    topic = topic.replace(new RegExp(figureName, "i"), "");
+  }
+  topic = topic
+    .replace(/^[\s,]*['’]s\s+/i, "")
+    .replace(/[?]+$/, "")
+    .trim();
+  return topic || rawQuery;
+}
+
+export function planQueries(rawQuery: string): QueryPlan {
+  const figure = guessFigure(rawQuery);
+  const topic = extractTopic(rawQuery, figure?.canonicalName);
+  const figureName = figure?.canonicalName;
+  const orgDomains = figure?.orgDomains;
+  const extraDomains = orgDomains ? withOrganizationDomains(orgDomains) : undefined;
+
+  const subject = figureName ? `${figureName} ${topic}` : rawQuery;
+
+  const searchQueries: PlannedQuery[] = [
+    {
+      query: `${subject} transcript`,
+      includeDomains: domainsForTiers(["government-official", "transcript-archive"]),
+      tierLabel: "transcript-archive",
+    },
+    {
+      query: `${subject} statement OR press conference`,
+      includeDomains: domainsForTiers(["government-official", "organization-official"], extraDomains),
+      tierLabel: "government-official",
+    },
+    {
+      query: `${subject} interview`,
+      includeDomains: domainsForTiers(["major-news"]),
+      tierLabel: "major-news",
+    },
+    // Unrestricted pass — catches trusted-tier pages our explicit domain
+    // lists missed. Results outside the registry are scored "unverified"
+    // by lib/search/trusted-sources.ts and dropped by MIN_CITABLE_CONFIDENCE.
+    {
+      query: subject,
+      tierLabel: "broad",
+    },
+  ];
+
+  return { rawQuery, figureGuess: figureName, organizationDomains: orgDomains, searchQueries };
+}
