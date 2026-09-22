@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FlaskConical, ShieldAlert, LibraryBig, Clock3 } from "lucide-react";
+import { FlaskConical, ShieldAlert, LibraryBig, Clock3, BadgeCheck } from "lucide-react";
 import type { Answer } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +21,8 @@ function relativeTime(iso: string) {
 }
 
 export function AnswerHeader({ answer, onOpenSources }: AnswerHeaderProps) {
+  const verifiedQuotes = answer.quotes.filter((q) => q.verified).length;
+
   return (
     <div className="mb-6">
       <div className="mb-4 flex items-start justify-between gap-4">
@@ -59,6 +61,12 @@ export function AnswerHeader({ answer, onOpenSources }: AnswerHeaderProps) {
           <Badge variant="shift" className="gap-1.5">
             <ShieldAlert className="h-3 w-3" />
             AI-synthesized from live sources — verify against links before citing
+          </Badge>
+        )}
+        {answer.quotes.length > 0 && (
+          <Badge variant="muted" className="gap-1.5">
+            <BadgeCheck className="h-3 w-3" />
+            {verifiedQuotes}/{answer.quotes.length} quotes verified against source text
           </Badge>
         )}
         <Badge variant="muted" className="gap-1.5">

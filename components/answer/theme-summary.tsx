@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SourceChip } from "@/components/source-chip";
-import type { Answer } from "@/lib/mock-data";
+import type { Answer } from "@/lib/types";
 
 interface ThemeSummaryProps {
   answer: Answer;
@@ -24,26 +24,32 @@ export function ThemeSummary({ answer, onOpenSource, activeSourceId }: ThemeSumm
         <div className="space-y-5 border-t border-border pt-5">
           {answer.themes.map((theme) => (
             <div key={theme.id}>
-              <div className="mb-1.5 flex items-start justify-between gap-3">
-                <h4 className="text-sm font-semibold">{theme.heading}</h4>
-                <div className="flex shrink-0 gap-1 pt-0.5">
-                  {theme.sourceIds.map((sid) => {
-                    const source = answer.sources.find((s) => s.id === sid);
-                    const idx = sourceIndex.get(sid);
-                    if (!source || !idx) return null;
-                    return (
-                      <SourceChip
-                        key={sid}
-                        source={source}
-                        index={idx}
-                        onClick={onOpenSource}
-                        active={activeSourceId === sid}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-              <p className="text-[13.5px] leading-relaxed text-muted-foreground">{theme.body}</p>
+              <h4 className="mb-1.5 text-sm font-semibold">{theme.heading}</h4>
+              {/* Every sentence carries its own citation(s) right after it,
+                  rather than one citation list for the whole paragraph. */}
+              <p className="text-[13.5px] leading-relaxed text-muted-foreground">
+                {theme.claims.map((claim) => (
+                  <span key={claim.id} className="mr-1.5">
+                    {claim.text}
+                    <span className="ml-1 inline-flex gap-0.5 align-middle">
+                      {claim.sourceIds.map((sid) => {
+                        const source = answer.sources.find((s) => s.id === sid);
+                        const idx = sourceIndex.get(sid);
+                        if (!source || !idx) return null;
+                        return (
+                          <SourceChip
+                            key={sid}
+                            source={source}
+                            index={idx}
+                            onClick={onOpenSource}
+                            active={activeSourceId === sid}
+                          />
+                        );
+                      })}
+                    </span>
+                  </span>
+                ))}
+              </p>
             </div>
           ))}
         </div>

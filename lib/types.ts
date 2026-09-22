@@ -27,12 +27,32 @@ export interface Source {
   timestamp?: string; // for video sources, e.g. "12:04"
 }
 
+/**
+ * One sentence of AI-generated output and the source(s) that specifically
+ * support it. Citation lives at this granularity — not once per paragraph —
+ * so "every sentence links to a source" is a structural guarantee, not a
+ * style guideline for the model to follow loosely.
+ */
+export interface Claim {
+  id: string;
+  text: string;
+  sourceIds: string[];
+}
+
 export interface ThemeSection {
   id: string;
   heading: string;
-  body: string;
-  sourceIds: string[];
+  claims: Claim[];
 }
+
+/**
+ * How a quote's "this is verbatim" claim was checked, not just asserted:
+ * "snippet" = matched against the search result text retrieved during
+ * retrieval; "full-page" = the source URL was fetched live and the quote
+ * was found in the page text; "unverified" = neither matched, so the quote
+ * is shown but flagged rather than presented as confirmed.
+ */
+export type VerificationMethod = "snippet" | "full-page" | "unverified";
 
 export interface Quote {
   id: string;
@@ -40,6 +60,8 @@ export interface Quote {
   date: string;
   context: string;
   sourceId: string;
+  verified: boolean;
+  verificationMethod: VerificationMethod;
 }
 
 export type Stance = "for" | "against" | "mixed" | "neutral";

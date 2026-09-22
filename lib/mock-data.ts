@@ -109,20 +109,50 @@ const answerTrump: Answer = {
     {
       id: "theme-1",
       heading: "Steel & aluminum as the opening move",
-      body: "Beginning with the 2018 Section 232 proclamation, tariffs on steel and aluminum imports were framed as a national-security and manufacturing-jobs measure, with the EU named specifically as a trade partner running a persistent surplus with the U.S.",
-      sourceIds: ["src-trump-4"],
+      claims: [
+        {
+          id: "claim-1-1",
+          text: "Beginning with the 2018 Section 232 proclamation, tariffs on steel and aluminum imports were framed as a national-security and manufacturing-jobs measure.",
+          sourceIds: ["src-trump-4"],
+        },
+        {
+          id: "claim-1-2",
+          text: "The EU was named specifically as a trade partner running a persistent surplus with the U.S.",
+          sourceIds: ["src-trump-4"],
+        },
+      ],
     },
     {
       id: "theme-2",
       heading: "'Reciprocal tariffs' as the 2025 framework",
-      body: "In 2025 remarks, the administration described a shift from targeted product tariffs to a broader reciprocal-tariff structure — matching U.S. import duties to what trading partners, including the EU, charge on American goods.",
-      sourceIds: ["src-trump-1", "src-trump-2"],
+      claims: [
+        {
+          id: "claim-2-1",
+          text: "In 2025 remarks, the administration described a shift from targeted product tariffs to a broader reciprocal-tariff structure.",
+          sourceIds: ["src-trump-1"],
+        },
+        {
+          id: "claim-2-2",
+          text: "That framework was described as matching U.S. import duties to what trading partners, including the EU, charge on American goods.",
+          sourceIds: ["src-trump-2"],
+        },
+      ],
     },
     {
       id: "theme-3",
       heading: "Autos named as a recurring flashpoint",
-      body: "European auto exports are cited repeatedly as an example of an imbalance — the stated U.S. tariff on European cars versus the EU tariff on American cars — used to argue that existing terms disadvantage U.S. manufacturers.",
-      sourceIds: ["src-trump-2", "src-trump-3"],
+      claims: [
+        {
+          id: "claim-3-1",
+          text: "European auto exports are cited repeatedly as an example of an imbalance — the stated U.S. tariff on European cars versus the EU tariff on American cars.",
+          sourceIds: ["src-trump-2"],
+        },
+        {
+          id: "claim-3-2",
+          text: "That gap is used to argue that existing terms disadvantage U.S. manufacturers.",
+          sourceIds: ["src-trump-3"],
+        },
+      ],
     },
   ],
   quotes: [
@@ -132,6 +162,8 @@ const answerTrump: Answer = {
       date: "2025-02-13",
       context: "Remarks announcing the reciprocal tariff framework",
       sourceId: "src-trump-1",
+      verified: true,
+      verificationMethod: "snippet",
     },
     {
       id: "q-trump-2",
@@ -139,6 +171,8 @@ const answerTrump: Answer = {
       date: "2024-11-03",
       context: "Discussing EU auto tariffs in a network interview",
       sourceId: "src-trump-3",
+      verified: true,
+      verificationMethod: "snippet",
     },
   ],
   sources: trumpSources,
@@ -206,20 +240,50 @@ const answerStarmer: Answer = {
     {
       id: "theme-1",
       heading: "2021: a specific, large annual figure",
-      body: "The original 'Green Prosperity Plan' was framed around a headline £28bn-per-year public investment figure, positioned as transformative industrial policy tied to jobs in green manufacturing.",
-      sourceIds: ["src-starmer-1"],
+      claims: [
+        {
+          id: "claim-1-1",
+          text: "The original 'Green Prosperity Plan' was framed around a headline £28bn-per-year public investment figure.",
+          sourceIds: ["src-starmer-1"],
+        },
+        {
+          id: "claim-1-2",
+          text: "It was positioned as transformative industrial policy tied to jobs in green manufacturing.",
+          sourceIds: ["src-starmer-1"],
+        },
+      ],
     },
     {
       id: "theme-2",
       heading: "2024: the figure is dropped, framed as fiscal discipline",
-      body: "Ahead of the general election, the £28bn figure was explicitly abandoned, attributed to changed economic conditions and a commitment to strict fiscal rules; the broader ambition was described as unchanged even as the specific number was removed.",
-      sourceIds: ["src-starmer-2"],
+      claims: [
+        {
+          id: "claim-2-1",
+          text: "Ahead of the general election, the £28bn figure was explicitly abandoned, attributed to changed economic conditions and a commitment to strict fiscal rules.",
+          sourceIds: ["src-starmer-2"],
+        },
+        {
+          id: "claim-2-2",
+          text: "The broader ambition was described as unchanged even as the specific number was removed.",
+          sourceIds: ["src-starmer-2"],
+        },
+      ],
     },
     {
       id: "theme-3",
       heading: "2024–present: the policy vehicle persists as GB Energy",
-      body: "In government, the publicly-owned energy company (Great British Energy) and a 2030 clean-power target were launched and restated, without reviving the original spending figure.",
-      sourceIds: ["src-starmer-3", "src-starmer-4"],
+      claims: [
+        {
+          id: "claim-3-1",
+          text: "In government, the publicly-owned energy company Great British Energy was launched.",
+          sourceIds: ["src-starmer-3"],
+        },
+        {
+          id: "claim-3-2",
+          text: "A 2030 clean-power target was separately restated, without reviving the original spending figure.",
+          sourceIds: ["src-starmer-4"],
+        },
+      ],
     },
   ],
   quotes: [
@@ -229,6 +293,8 @@ const answerStarmer: Answer = {
       date: "2021-09-27",
       context: "Labour Party conference speech introducing the pledge",
       sourceId: "src-starmer-1",
+      verified: true,
+      verificationMethod: "snippet",
     },
     {
       id: "q-starmer-2",
@@ -236,6 +302,8 @@ const answerStarmer: Answer = {
       date: "2024-02-08",
       context: "Responding to questions about scaling back the pledge",
       sourceId: "src-starmer-2",
+      verified: true,
+      verificationMethod: "snippet",
     },
     {
       id: "q-starmer-3",
@@ -243,6 +311,8 @@ const answerStarmer: Answer = {
       date: "2024-07-25",
       context: "Press conference launching Great British Energy",
       sourceId: "src-starmer-3",
+      verified: true,
+      verificationMethod: "full-page",
     },
   ],
   sources: starmerSources,
@@ -343,20 +413,50 @@ const answerMusk: Answer = {
     {
       id: "theme-1",
       heading: "Public calls for a pause and oversight",
-      body: "In 2023, Musk was a signatory to an open letter calling for a six-month pause on training AI systems more powerful than a named threshold, and separately testified to lawmakers in favor of a regulatory body for frontier AI.",
-      sourceIds: ["src-musk-1", "src-musk-2"],
+      claims: [
+        {
+          id: "claim-1-1",
+          text: "In 2023, Musk was a signatory to an open letter calling for a six-month pause on training AI systems more powerful than a named threshold.",
+          sourceIds: ["src-musk-1"],
+        },
+        {
+          id: "claim-1-2",
+          text: "He separately testified to lawmakers in favor of a regulatory body for frontier AI.",
+          sourceIds: ["src-musk-2"],
+        },
+      ],
     },
     {
       id: "theme-2",
       heading: "Founding xAI as a stated safety rationale",
-      body: "Shortly after signing the pause letter, Musk founded xAI, explaining the decision in interviews as motivated by wanting a 'maximally truth-seeking' alternative in the field rather than ceding development entirely to other labs.",
-      sourceIds: ["src-musk-3"],
+      claims: [
+        {
+          id: "claim-2-1",
+          text: "Shortly after signing the pause letter, Musk founded xAI.",
+          sourceIds: ["src-musk-3"],
+        },
+        {
+          id: "claim-2-2",
+          text: "He explained the decision in interviews as motivated by wanting a 'maximally truth-seeking' alternative in the field rather than ceding development entirely to other labs.",
+          sourceIds: ["src-musk-3"],
+        },
+      ],
     },
     {
       id: "theme-3",
       heading: "International summit engagement",
-      body: "Musk participated in the UK's 2023 AI Safety Summit, using the platform to reiterate concerns about existential-level risk from unregulated frontier models.",
-      sourceIds: ["src-musk-4"],
+      claims: [
+        {
+          id: "claim-3-1",
+          text: "Musk participated in the UK's 2023 AI Safety Summit.",
+          sourceIds: ["src-musk-4"],
+        },
+        {
+          id: "claim-3-2",
+          text: "He used the platform to reiterate concerns about existential-level risk from unregulated frontier models.",
+          sourceIds: ["src-musk-4"],
+        },
+      ],
     },
   ],
   quotes: [
@@ -366,6 +466,8 @@ const answerMusk: Answer = {
       date: "2023-09-13",
       context: "Testimony to the Senate AI Insight Forum",
       sourceId: "src-musk-2",
+      verified: true,
+      verificationMethod: "snippet",
     },
     {
       id: "q-musk-2",
@@ -373,6 +475,8 @@ const answerMusk: Answer = {
       date: "2023-07-12",
       context: "Interview explaining the founding of xAI",
       sourceId: "src-musk-3",
+      verified: false,
+      verificationMethod: "unverified",
     },
   ],
   sources: muskSources,

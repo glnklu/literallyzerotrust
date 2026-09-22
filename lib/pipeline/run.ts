@@ -12,6 +12,7 @@
 import { planQueries } from "@/lib/pipeline/query-plan";
 import { retrieveSources } from "@/lib/pipeline/retrieve";
 import { synthesizeAnswer, isSynthesisConfigured } from "@/lib/pipeline/synthesize";
+import { verifyQuotes } from "@/lib/pipeline/verify";
 import { isSearchConfigured } from "@/lib/search/tavily";
 import { findAnswerForQuery } from "@/lib/mock-data";
 import type { Answer, AnswerResult, Figure } from "@/lib/types";
@@ -104,13 +105,18 @@ export async function generateAnswer(rawQuery: string): Promise<AnswerResult> {
 
   const core = synthesis.data;
   const citedSourceIds = new Set<string>([
-    ...core.themes.flatMap((t) => t.sourceIds),
+    ...core.themes.flatMap((t) => t.claims.flatMap((c) => c.sourceIds)),
     ...core.quotes.map((q) => q.sourceId),
     ...(core.stanceShift?.points.map((p) => p.sourceId) ?? []),
   ]);
   const sources = retrieval.documents
     .filter((d) => citedSourceIds.has(d.id))
     .map(({ snippet: _snippet, ...source }) => source);
+
+  // Quotes are the highest-stakes claim in the whole app ("this is what they
+  // actually said, verbatim") — check each one against real source text
+  // rather than trusting the model's "verbatim" instruction-following.
+  const verifications = await verifyQuotes(core.quotes, retrieval.documents);
 
   const figure: Figure = {
     id: slugify(core.figureName),
@@ -127,8 +133,17 @@ export async function generateAnswer(rawQuery: string): Promise<AnswerResult> {
     generatedAt: new Date().toISOString(),
     mode: "live",
     summary: core.summary,
-    themes: core.themes.map((t, i) => ({ id: `theme-${i + 1}`, ...t })),
-    quotes: core.quotes.map((q, i) => ({ id: `quote-${i + 1}`, ...q })),
+    themes: core.themes.map((t, i) => ({
+      id: `theme-${i + 1}`,
+      heading: t.heading,
+      claims: t.claims.map((c, j) => ({ id: `theme-${i + 1}-claim-${j + 1}`, ...c })),
+    })),
+    quotes: core.quotes.map((q, i) => ({
+      id: `quote-${i + 1}`,
+      ...q,
+      verified: verifications[i].verified,
+      verificationMethod: verifications[i].method,
+    })),
     sources,
     stanceShift: core.stanceShift,
     relatedPrompts: core.relatedPrompts.slice(0, 4),

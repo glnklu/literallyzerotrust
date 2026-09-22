@@ -28,7 +28,7 @@ const SYSTEM_PROMPT = `You are the synthesis engine for "Trust No One?", a trans
 Hard rules, no exceptions:
 1. Use only the content inside the provided <documents>. Never draw on outside knowledge of what this figure has said, believes, or has been reported to believe elsewhere. If your training data "remembers" something relevant that isn't in the documents, ignore it.
 2. Never state or imply a political, moral, or factual judgment about the figure's position. Do not use evaluative language (e.g. "concerning", "admirable", "extreme", "reasonable", "hypocritical", "flip-flopped"). Describe what was said and when; let the reader judge it.
-3. Every theme and every quote must cite one or more of the provided document ids. Never invent a document id, a quote, a date, or a source not present in <documents>.
+3. Write each theme as a list of individual sentence-level "claims", not one paragraph. Each claim is exactly one sentence, and each claim cites the specific document id(s) that support THAT sentence — not a single citation list for the whole theme. If one sentence draws on two documents, cite both; if a heading needs three sentences to explain, that's three claims, each separately cited. Never invent a document id, a quote, a date, or a source not present in <documents>.
 4. Quotes must be copied verbatim from a document's content. If no document contains a clean, quotable verbatim sentence on this topic, leave "quotes" empty rather than paraphrasing something as if it were quoted.
 5. If the documents show the figure's position changing, softening, reversing, or being restated differently over time, populate "stanceShift" with a neutral chronological sequence of at least two points. State what changed and when — never label either position as the "real" or "true" one.
 6. If, after reviewing every document, there isn't enough material to actually answer what this figure said on this specific topic (documents are off-topic, about a different person, too thin, or contradictory in a way you can't responsibly summarize), set "insufficientEvidence" to true, give one plain-language sentence in "insufficientReason", and leave "themes"/"quotes" empty. Do not stretch unrelated material into an answer.
@@ -55,8 +55,14 @@ const answerCoreSchema = z.object({
     .array(
       z.object({
         heading: z.string(),
-        body: z.string(),
-        sourceIds: z.array(z.string()).min(1),
+        claims: z
+          .array(
+            z.object({
+              text: z.string(),
+              sourceIds: z.array(z.string()).min(1),
+            })
+          )
+          .min(1),
       })
     )
     .optional()
@@ -103,10 +109,24 @@ const EMIT_ANSWER_TOOL: Anthropic.Tool = {
           type: "object",
           properties: {
             heading: { type: "string" },
-            body: { type: "string" },
-            sourceIds: { type: "array", items: { type: "string" } },
+            claims: {
+              type: "array",
+              description: "One entry per sentence. Do not merge multiple sentences into one claim.",
+              items: {
+                type: "object",
+                properties: {
+                  text: { type: "string", description: "Exactly one sentence." },
+                  sourceIds: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Document id(s) that specifically support this sentence.",
+                  },
+                },
+                required: ["text", "sourceIds"],
+              },
+            },
           },
-          required: ["heading", "body", "sourceIds"],
+          required: ["heading", "claims"],
         },
       },
       quotes: {
@@ -242,10 +262,12 @@ export async function synthesizeAnswer(input: SynthesisInput): Promise<Synthesis
 }
 
 /**
- * Defense in depth: drop any claim that cites a document id we didn't
- * actually retrieve. The model is instructed never to do this, but the UI's
- * entire trust model depends on every citation resolving to a real source,
- * so it's re-checked in code rather than taken on faith.
+ * Defense in depth: drop any sentence that cites a document id we didn't
+ * actually retrieve, at the individual claim level. The model is instructed
+ * never to do this, but the UI's entire trust model depends on every
+ * sentence's citation resolving to a real source, so it's re-checked in
+ * code rather than taken on faith. A theme that loses all its claims this
+ * way is dropped entirely rather than shown as an empty heading.
  */
 function enforceCitationIntegrity(
   data: SynthesizedCore,
@@ -254,8 +276,13 @@ function enforceCitationIntegrity(
   const validIds = new Set(documents.map((d) => d.id));
 
   const themes = data.themes
-    .map((t) => ({ ...t, sourceIds: t.sourceIds.filter((id) => validIds.has(id)) }))
-    .filter((t) => t.sourceIds.length > 0);
+    .map((t) => ({
+      ...t,
+      claims: t.claims
+        .map((c) => ({ ...c, sourceIds: c.sourceIds.filter((id) => validIds.has(id)) }))
+        .filter((c) => c.sourceIds.length > 0),
+    }))
+    .filter((t) => t.claims.length > 0);
 
   const quotes = data.quotes.filter((q) => validIds.has(q.sourceId));
 
