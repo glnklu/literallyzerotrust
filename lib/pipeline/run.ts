@@ -85,9 +85,20 @@ export async function generateAnswer(rawQuery: string): Promise<AnswerResult> {
   const retrieval = await retrieveSources(plan);
 
   if (retrieval.providerUnavailable) {
-    // Search API rejected every request the same way (e.g. bad/missing
-    // key) — treat as "not configured" rather than surfacing a scary error.
-    return mockFallback(query);
+    // A key IS configured (isLivePipelineConfigured() passed above), but
+    // every search request still failed the same way — almost always an
+    // invalid/expired key, an unverified account, or a quota issue, not
+    // "search isn't set up." Silently falling back to the demo dataset
+    // here would make a broken key look identical to no key at all, which
+    // is exactly the kind of hidden failure this app exists to avoid
+    // surfacing. Report it as a real error instead.
+    return {
+      status: "error",
+      query,
+      message: `Search requests are failing (${
+        retrieval.providerErrorSample ?? "no successful response from the search provider"
+      }). Check that TAVILY_API_KEY is valid, active, and has remaining quota.`,
+    };
   }
 
   if (retrieval.documents.length < MIN_SOURCES_FOR_ANSWER) {

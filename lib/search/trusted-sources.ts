@@ -19,7 +19,8 @@ export type TrustTier =
   | "government-official" // primary legislative/executive record
   | "organization-official" // a person's own company/campaign/party as publisher
   | "transcript-archive" // third-party verbatim transcript archives
-  | "major-news" // established news organizations' interview/transcript pages
+  | "major-news" // established general/political news organizations
+  | "general-news" // reputable outlets outside politics — entertainment, business, sports
   | "unverified"; // anything not in the registry
 
 interface TierConfig {
@@ -32,6 +33,7 @@ export const TIER_CONFIG: Record<TrustTier, TierConfig> = {
   "organization-official": { confidence: 93, label: "Official organization release" },
   "transcript-archive": { confidence: 89, label: "Verified transcript archive" },
   "major-news": { confidence: 76, label: "Major news outlet" },
+  "general-news": { confidence: 68, label: "Established news outlet" },
   unverified: { confidence: 45, label: "Unverified source" },
 };
 
@@ -86,6 +88,29 @@ const DOMAIN_TIERS: Record<string, TrustTier> = {
   "ft.com": "major-news",
   "skynews.com": "major-news",
   "itv.com": "major-news",
+
+  // --- General-interest outlets (entertainment, business, sports, culture) —
+  // the app covers "any public figure," not just politicians, and most of
+  // what's written about a musician, athlete, or executive lives here
+  // rather than on a government or major-political-news domain. -----------
+  "variety.com": "general-news",
+  "billboard.com": "general-news",
+  "rollingstone.com": "general-news",
+  "hollywoodreporter.com": "general-news",
+  "people.com": "general-news",
+  "ew.com": "general-news",
+  "vulture.com": "general-news",
+  "usatoday.com": "general-news",
+  "time.com": "general-news",
+  "forbes.com": "general-news",
+  "businessinsider.com": "general-news",
+  "espn.com": "general-news",
+  "vogue.com": "general-news",
+  "gq.com": "general-news",
+  "pitchfork.com": "general-news",
+  "theverge.com": "general-news",
+  "techcrunch.com": "general-news",
+  "wired.com": "general-news",
 };
 
 /** Friendly display names for the Source Drawer's "publisher" field. */
@@ -112,6 +137,15 @@ const PUBLISHER_NAMES: Record<string, string> = {
   "nytimes.com": "The New York Times",
   "washingtonpost.com": "The Washington Post",
   "theguardian.com": "The Guardian",
+  "variety.com": "Variety",
+  "billboard.com": "Billboard",
+  "rollingstone.com": "Rolling Stone",
+  "hollywoodreporter.com": "The Hollywood Reporter",
+  "people.com": "People",
+  "usatoday.com": "USA Today",
+  "time.com": "Time",
+  "forbes.com": "Forbes",
+  "espn.com": "ESPN",
 };
 
 /**

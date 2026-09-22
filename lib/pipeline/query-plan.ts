@@ -119,7 +119,7 @@ export function planQueries(rawQuery: string): QueryPlan {
     },
     {
       query: `${subject} interview`,
-      includeDomains: domainsForTiers(["major-news"]),
+      includeDomains: domainsForTiers(["major-news", "general-news"]),
       tierLabel: "major-news",
     },
     // Unrestricted pass — catches trusted-tier pages our explicit domain

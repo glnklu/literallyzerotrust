@@ -28,8 +28,10 @@ export interface RetrievalResult {
   documents: RetrievedDocument[];
   queriesRun: number;
   queriesFailed: number;
-  /** True when every single query failed the same way (e.g. missing API key). */
+  /** True when every single query failed the same way (e.g. missing or invalid API key). */
   providerUnavailable: boolean;
+  /** One representative error message, when providerUnavailable — for surfacing/debugging why. */
+  providerErrorSample?: string;
 }
 
 function shortHash(input: string): string {
@@ -62,11 +64,14 @@ export async function retrieveSources(
   const seen = new Map<string, RetrievedDocument>();
   let queriesFailed = 0;
   let allFailedSameProviderError = true;
+  let providerErrorSample: string | undefined;
 
   for (const result of settled) {
     if (result.status === "rejected") {
       queriesFailed++;
-      if (!(result.reason instanceof SearchProviderError)) {
+      if (result.reason instanceof SearchProviderError) {
+        providerErrorSample ??= result.reason.message;
+      } else {
         allFailedSameProviderError = false;
       }
       continue;
@@ -95,10 +100,13 @@ export async function retrieveSources(
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, MAX_DOCUMENTS);
 
+  const providerUnavailable = allFailedSameProviderError && queriesFailed === plan.searchQueries.length;
+
   return {
     documents,
     queriesRun: plan.searchQueries.length,
     queriesFailed,
-    providerUnavailable: allFailedSameProviderError && queriesFailed === plan.searchQueries.length,
+    providerUnavailable,
+    providerErrorSample: providerUnavailable ? providerErrorSample : undefined,
   };
 }
