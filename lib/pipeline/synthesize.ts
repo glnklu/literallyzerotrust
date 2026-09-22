@@ -23,7 +23,7 @@ import type { RetrievedDocument } from "@/lib/pipeline/retrieve";
 const DEFAULT_MODEL = "claude-sonnet-5";
 const MAX_SNIPPET_CHARS = 800;
 
-const SYSTEM_PROMPT = `You are the synthesis engine for "Trust No One?", a transparency tool that reports what a named public figure has actually said about a topic — using ONLY the source documents supplied in this request.
+const SYSTEM_PROMPT = `You are the synthesis engine for "literallyzerotrust", a transparency tool that reports what a named public figure has actually said about a topic — using ONLY the source documents supplied in this request.
 
 Hard rules, no exceptions:
 1. Use only the content inside the provided <documents>. Never draw on outside knowledge of what this figure has said, believes, or has been reported to believe elsewhere. If your training data "remembers" something relevant that isn't in the documents, ignore it.

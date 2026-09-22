@@ -24,7 +24,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Trust No One? — Public Figure Statement Explorer",
+  title: "literallyzerotrust — Public Figure Statement Explorer",
   description:
     "Understand influential public figures by their actual words — not second-hand commentary. Source-backed, neutral, fact-based.",
 };

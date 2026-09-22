@@ -13,7 +13,7 @@ export function SiteHeader() {
           </div>
           <div className="leading-none">
             <p className="font-serif text-[15px] font-semibold tracking-tight">
-              Trust No One<span className="text-accent">?</span>
+              literally<span className="text-accent">zero</span>trust
             </p>
             <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
               Statement &amp; Interview Explorer
