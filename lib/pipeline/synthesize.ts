@@ -92,6 +92,7 @@ export type SynthesizedCore = z.infer<typeof answerCoreSchema>;
 const EMIT_ANSWER_TOOL: Anthropic.Tool = {
   name: "emit_answer",
   description: "Emit the neutral, citation-backed answer synthesized from the provided documents.",
+  strict: true,
   input_schema: {
     type: "object",
     properties: {
@@ -123,10 +124,12 @@ const EMIT_ANSWER_TOOL: Anthropic.Tool = {
                   },
                 },
                 required: ["text", "sourceIds"],
+                additionalProperties: false,
               },
             },
           },
           required: ["heading", "claims"],
+          additionalProperties: false,
         },
       },
       quotes: {
@@ -140,6 +143,7 @@ const EMIT_ANSWER_TOOL: Anthropic.Tool = {
             sourceId: { type: "string" },
           },
           required: ["text", "date", "context", "sourceId"],
+          additionalProperties: false,
         },
       },
       stanceShift: {
@@ -159,14 +163,17 @@ const EMIT_ANSWER_TOOL: Anthropic.Tool = {
                 sourceId: { type: "string" },
               },
               required: ["date", "label", "summary", "stance", "sourceId"],
+              additionalProperties: false,
             },
           },
         },
         required: ["topic", "points"],
+        additionalProperties: false,
       },
       relatedPrompts: { type: "array", items: { type: "string" } },
     },
     required: ["figureName", "figureRole", "insufficientEvidence"],
+    additionalProperties: false,
   },
 };
 
