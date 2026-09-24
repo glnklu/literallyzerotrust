@@ -26,6 +26,8 @@ import { findFigureByAlias } from "@/lib/figures";
 
 interface FigureGuess {
   canonicalName: string;
+  /** The substring actually found in rawQuery (e.g. "Trump", not "Donald Trump") — stripped when building the topic. */
+  matchedText: string;
   orgDomains?: string[];
   socialHandle?: string;
 }
@@ -65,7 +67,20 @@ export interface QueryPlan {
 function guessFigure(rawQuery: string): FigureGuess | undefined {
   const known = findFigureByAlias(rawQuery);
   if (known) {
-    return { canonicalName: known.name, orgDomains: known.orgDomains, socialHandle: known.socialHandle };
+    // The alias that actually matched (e.g. "trump") is usually shorter
+    // than the canonical name ("Donald Trump") — strip that, not the
+    // canonical form, or a query that only ever says "Trump" ends up with
+    // the canonical name appended rather than substituted.
+    const lower = rawQuery.toLowerCase();
+    const matchedAlias = [...known.aliases]
+      .sort((a, b) => b.length - a.length)
+      .find((alias) => lower.includes(alias));
+    return {
+      canonicalName: known.name,
+      matchedText: matchedAlias ?? known.name,
+      orgDomains: known.orgDomains,
+      socialHandle: known.socialHandle,
+    };
   }
 
   // Fallback: two-or-more consecutive capitalized words, e.g. "Keir Starmer"
@@ -74,42 +89,63 @@ function guessFigure(rawQuery: string): FigureGuess | undefined {
     const candidate = capNameMatch[1];
     const words = candidate.toLowerCase().split(/\s+/);
     if (!words.every((w) => QUESTION_STOPWORDS.has(w))) {
-      return { canonicalName: candidate };
+      return { canonicalName: candidate, matchedText: candidate };
     }
   }
 
   // Further fallback: a single capitalized word, for mononyms (e.g. "Pink",
-  // "Madonna", "Drake"). Skips the question's first word, since that's
-  // almost always just sentence-initial capitalization ("What...", "How...")
-  // rather than a name. This is a heuristic, not real NER — it can still
-  // misfire on a capitalized non-name (a place, a brand), but for a
-  // one-word subject it's the best signal available without an LLM call.
+  // "Madonna", "Putin"). Takes the *first* capitalized word that isn't a
+  // question stopword — not the first non-first word. A query can be a
+  // question ("What does Pink think...", where "What" is capitalized only
+  // by sentence position and must be skipped) or a bare "Name topic" phrase
+  // ("Putin about Georgia", where the name genuinely is the first word and
+  // skipping it entirely would misfire on "Georgia" instead). Filtering by
+  // the stopword list handles both: real question words get skipped
+  // wherever they sit, and an actual leading name doesn't. This is a
+  // heuristic, not real NER — it can still misfire on a capitalized
+  // non-name (a place, a brand), but for a one-word subject it's the best
+  // signal available without an LLM call.
   const singleCapMatches = [...rawQuery.matchAll(/\b[A-Z][a-zA-Z'-]{2,}\b/g)];
-  const isFirstWord = (index: number) => rawQuery.slice(0, index).trim().length === 0;
-  const mononym = singleCapMatches.find(
-    (m) => !isFirstWord(m.index ?? 0) && !QUESTION_STOPWORDS.has(m[0].toLowerCase())
-  );
-  if (mononym) return { canonicalName: mononym[0] };
+  const mononym = singleCapMatches.find((m) => !QUESTION_STOPWORDS.has(m[0].toLowerCase()));
+  if (mononym) return { canonicalName: mononym[0], matchedText: mononym[0] };
 
   return undefined;
 }
 
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 /** Strips the figure's name and common question scaffolding to leave a topic phrase. */
-function extractTopic(rawQuery: string, figureName?: string): string {
+function extractTopic(rawQuery: string, matchedText?: string): string {
   let topic = rawQuery;
-  if (figureName) {
-    topic = topic.replace(new RegExp(figureName, "i"), "");
+  if (matchedText) {
+    topic = topic.replace(new RegExp(escapeRegExp(matchedText), "i"), "");
   }
   topic = topic
-    .replace(/^[\s,]*['’]s\s+/i, "")
+    // An orphaned possessive marker left where the name used to sit (e.g.
+    // "Starmer's" -> "'s") can end up anywhere in the string, not just at
+    // the very start — the name is often mid-sentence ("What is X's...").
+    .replace(/\s['’]s\b/i, "")
     .replace(/[?]+$/, "")
+    .replace(/\s{2,}/g, " ")
     .trim();
+
+  // Removing the figure's name from mid-sentence (e.g. "What does X think
+  // about...") leaves the question's leading scaffolding exposed at the
+  // front — strip that run too, so it doesn't leak into the search query
+  // as noise words instead of real topic terms.
+  const words = topic.split(/\s+/);
+  let start = 0;
+  while (start < words.length && QUESTION_STOPWORDS.has(words[start].toLowerCase())) start++;
+  topic = words.slice(start).join(" ");
+
   return topic || rawQuery;
 }
 
 export function planQueries(rawQuery: string): QueryPlan {
   const figure = guessFigure(rawQuery);
-  const topic = extractTopic(rawQuery, figure?.canonicalName);
+  const topic = extractTopic(rawQuery, figure?.matchedText);
   const figureName = figure?.canonicalName;
   const orgDomains = figure?.orgDomains;
   const socialHandle = figure?.socialHandle;

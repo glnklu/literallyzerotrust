@@ -60,6 +60,15 @@ const DOMAIN_TIERS: Record<string, TrustTier> = {
   "un.org": "government-official",
   "nato.int": "government-official",
   "sec.gov": "government-official",
+  // The registry above was US/UK/EU-only, which meant any head of state or
+  // official outside those (Putin, for example) had no official-record tier
+  // at all to search within — not "no results," but no domain even tried.
+  "kremlin.ru": "government-official",
+  "en.kremlin.ru": "government-official",
+  "elysee.fr": "government-official",
+  "bundesregierung.de": "government-official",
+  "canada.ca": "government-official",
+  "pmindia.gov.in": "government-official",
 
   // --- Verbatim transcript archives ---------------------------------------
   "c-span.org": "transcript-archive",
@@ -131,6 +140,12 @@ const PUBLISHER_NAMES: Record<string, string> = {
   "gov.uk": "UK Government",
   "parliament.uk": "UK Parliament",
   "hansard.parliament.uk": "Hansard (UK Parliament)",
+  "kremlin.ru": "The Kremlin",
+  "en.kremlin.ru": "The Kremlin",
+  "elysee.fr": "Élysée Palace (French Presidency)",
+  "bundesregierung.de": "German Federal Government",
+  "canada.ca": "Government of Canada",
+  "pmindia.gov.in": "Prime Minister's Office (India)",
   "c-span.org": "C-SPAN",
   "rev.com": "Rev (transcript archive)",
   "factba.se": "Factbase (transcript archive)",
