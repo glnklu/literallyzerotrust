@@ -14,7 +14,8 @@ export type SourceType =
   | "video"
   | "press-release"
   | "vote-record"
-  | "interview";
+  | "interview"
+  | "post";
 
 export interface Source {
   id: string;
@@ -25,24 +26,6 @@ export interface Source {
   url: string;
   confidence: number; // 0-100, editorial confidence that this is an official/primary source
   timestamp?: string; // for video sources, e.g. "12:04"
-}
-
-/**
- * One sentence of AI-generated output and the source(s) that specifically
- * support it. Citation lives at this granularity — not once per paragraph —
- * so "every sentence links to a source" is a structural guarantee, not a
- * style guideline for the model to follow loosely.
- */
-export interface Claim {
-  id: string;
-  text: string;
-  sourceIds: string[];
-}
-
-export interface ThemeSection {
-  id: string;
-  heading: string;
-  claims: Claim[];
 }
 
 /**
@@ -62,21 +45,6 @@ export interface Quote {
   sourceId: string;
   verified: boolean;
   verificationMethod: VerificationMethod;
-}
-
-export type Stance = "for" | "against" | "mixed" | "neutral";
-
-export interface StancePoint {
-  date: string;
-  label: string;
-  summary: string;
-  stance: Stance;
-  sourceId: string;
-}
-
-export interface StanceShift {
-  topic: string;
-  points: StancePoint[];
 }
 
 export interface Figure {
@@ -100,11 +68,11 @@ export interface Answer {
   figure: Figure;
   generatedAt: string;
   mode: AnswerMode;
-  summary: string;
-  themes: ThemeSection[];
+  /** Verbatim quotes are the answer itself — shown before the summary, not after. */
   quotes: Quote[];
+  /** A short (1-3 sentence) recap of what the quotes above show, written after they're chosen. */
+  summary: string;
   sources: Source[];
-  stanceShift?: StanceShift;
   relatedPrompts: string[];
 }
 

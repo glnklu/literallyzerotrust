@@ -129,11 +129,7 @@ export async function generateAnswer(rawQuery: string): Promise<AnswerResult> {
   }
 
   const core = synthesis.data;
-  const citedSourceIds = new Set<string>([
-    ...core.themes.flatMap((t) => t.claims.flatMap((c) => c.sourceIds)),
-    ...core.quotes.map((q) => q.sourceId),
-    ...(core.stanceShift?.points.map((p) => p.sourceId) ?? []),
-  ]);
+  const citedSourceIds = new Set<string>(core.quotes.map((q) => q.sourceId));
   const sources = retrieval.documents
     .filter((d) => citedSourceIds.has(d.id))
     .map(({ snippet: _snippet, ...source }) => source);
@@ -157,20 +153,14 @@ export async function generateAnswer(rawQuery: string): Promise<AnswerResult> {
     figure,
     generatedAt: new Date().toISOString(),
     mode: "live",
-    summary: core.summary,
-    themes: core.themes.map((t, i) => ({
-      id: `theme-${i + 1}`,
-      heading: t.heading,
-      claims: t.claims.map((c, j) => ({ id: `theme-${i + 1}-claim-${j + 1}`, ...c })),
-    })),
     quotes: core.quotes.map((q, i) => ({
       id: `quote-${i + 1}`,
       ...q,
       verified: verifications[i].verified,
       verificationMethod: verifications[i].method,
     })),
+    summary: core.summary,
     sources,
-    stanceShift: core.stanceShift,
     relatedPrompts: core.relatedPrompts.slice(0, 4),
   };
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Layers, Quote, ListChecks, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Layers, Quote, MessagesSquare, AlertTriangle } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -7,12 +7,12 @@ const PRINCIPLES = [
   {
     icon: Layers,
     title: "Sources are tiered, not treated equally",
-    body: "Government and official records score highest, then verified transcript archives, then major news outlets. Anything outside this registry scores low and is usually excluded rather than cited as if it were primary.",
+    body: "Government and official records score highest, then verified transcript archives and the figure's own social posts, then major news outlets. Anything outside this registry scores low and is usually excluded rather than cited as if it were primary.",
   },
   {
-    icon: ListChecks,
-    title: "Citation is per sentence, not per paragraph",
-    body: "Every individual sentence in a themed summary carries its own source reference — a paragraph can't hide an uncited claim behind one citation for the whole block.",
+    icon: MessagesSquare,
+    title: "The answer is quotes, not a paraphrase",
+    body: "Every answer is built from the figure's own verbatim words — a post, an interview, an official statement — never a synthesized narrative written about them. If there's no clean quote to pull, that topic simply isn't answered.",
   },
   {
     icon: Quote,

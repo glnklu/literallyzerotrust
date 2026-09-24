@@ -21,6 +21,8 @@ export interface FigureProfile {
   aliases: string[];
   /** seeds "organization-official" trust tier domains for this figure's own org/campaign/company */
   orgDomains?: string[];
+  /** known handle (no @) on X/Twitter — narrows the direct-post search to this account */
+  socialHandle?: string;
   categories: string[];
   initials: string;
   accent: string; // tailwind gradient classes, e.g. "from-red-500/15 to-blue-500/15"
@@ -34,6 +36,7 @@ export const FIGURES: FigureProfile[] = [
     name: "Donald Trump",
     role: "President of the United States",
     aliases: ["trump", "donald trump"],
+    socialHandle: "realDonaldTrump",
     categories: ["Foreign Policy", "Economy"],
     initials: "DT",
     accent: "from-red-500/15 to-blue-500/15",
@@ -45,6 +48,7 @@ export const FIGURES: FigureProfile[] = [
     role: "Prime Minister of the United Kingdom",
     aliases: ["starmer", "keir starmer"],
     orgDomains: ["labour.org.uk"],
+    socialHandle: "Keir_Starmer",
     categories: ["Historical Shifts", "Foreign Policy"],
     initials: "KS",
     accent: "from-rose-500/15 to-amber-500/15",
@@ -56,6 +60,7 @@ export const FIGURES: FigureProfile[] = [
     role: "CEO, Tesla & xAI",
     aliases: ["musk", "elon musk"],
     orgDomains: ["tesla.com", "x.ai", "xai.com"],
+    socialHandle: "elonmusk",
     categories: ["Tech & AI"],
     initials: "EM",
     accent: "from-slate-500/15 to-cyan-500/15",
@@ -66,6 +71,7 @@ export const FIGURES: FigureProfile[] = [
     name: "Kamala Harris",
     role: "Former Vice President of the United States",
     aliases: ["harris", "kamala harris"],
+    socialHandle: "KamalaHarris",
     categories: ["Tech & AI", "Economy"],
     initials: "KH",
     accent: "from-violet-500/15 to-fuchsia-500/15",

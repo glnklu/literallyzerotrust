@@ -11,18 +11,18 @@ const STEPS = [
   },
   {
     icon: Filter,
-    title: "2. Targeted searches are planned",
-    body: "The figure and topic are identified, then split into several targeted searches — one aimed at official transcripts and government records, one at press statements, one at major-news interviews, plus a general pass as a backstop.",
+    title: "2. Targeted first-source searches are planned",
+    body: "The figure and topic are identified, then split into targeted searches — official transcripts and government records, the figure's own organization, their own posts on X or Truth Social, and interview transcripts. No general web search is run, so secondary commentary and analysis never enter the mix.",
   },
   {
     icon: ShieldCheck,
     title: "3. Sources are scored before anything is written",
-    body: "Every result is checked against a domain registry — official government records, verified transcript archives, major news outlets — and given a confidence score. Anything too unreliable is dropped before it ever reaches the writing step.",
+    body: "Every result is checked against a domain registry — official records, verified transcript archives, the figure's own social accounts, major news outlets — and given a confidence score. Anything too unreliable is dropped before it ever reaches the writing step.",
   },
   {
     icon: Sparkles,
-    title: "4. Claude writes — citing every sentence",
-    body: "Claude reads only the sources that passed step 3 and drafts a neutral summary. Every individual sentence carries its own citation back to a specific source, never one citation covering a whole paragraph.",
+    title: "4. Claude picks quotes first, then a short summary",
+    body: "Claude reads only the sources that passed step 3 and pulls out the figure's own verbatim words — from posts, interviews, and official statements — each cited to its specific source. Only after the quotes are chosen does it write a short summary recapping what they show.",
   },
   {
     icon: ShieldCheck,

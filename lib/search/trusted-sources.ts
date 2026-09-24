@@ -19,6 +19,7 @@ export type TrustTier =
   | "government-official" // primary legislative/executive record
   | "organization-official" // a person's own company/campaign/party as publisher
   | "transcript-archive" // third-party verbatim transcript archives
+  | "social-post" // a direct post on the figure's own social account
   | "major-news" // established general/political news organizations
   | "general-news" // reputable outlets outside politics — entertainment, business, sports
   | "unverified"; // anything not in the registry
@@ -32,6 +33,7 @@ export const TIER_CONFIG: Record<TrustTier, TierConfig> = {
   "government-official": { confidence: 97, label: "Official government record" },
   "organization-official": { confidence: 93, label: "Official organization release" },
   "transcript-archive": { confidence: 89, label: "Verified transcript archive" },
+  "social-post": { confidence: 80, label: "Direct social post" },
   "major-news": { confidence: 76, label: "Major news outlet" },
   "general-news": { confidence: 68, label: "Established news outlet" },
   unverified: { confidence: 45, label: "Unverified source" },
@@ -65,6 +67,15 @@ const DOMAIN_TIERS: Record<string, TrustTier> = {
   "factba.se": "transcript-archive",
   "millercenter.org": "transcript-archive",
   "americanrhetoric.com": "transcript-archive",
+
+  // --- Direct posts on a figure's own social account ----------------------
+  // Domain-level only (can't restrict to a specific handle via search's
+  // include_domains) — query-plan.ts narrows further by putting the known
+  // handle, when the figure registry has one, directly in the query text.
+  "x.com": "social-post",
+  "twitter.com": "social-post",
+  "threads.net": "social-post",
+  "truthsocial.com": "social-post",
 
   // --- Major news organizations --------------------------------------------
   "reuters.com": "major-news",
@@ -123,6 +134,10 @@ const PUBLISHER_NAMES: Record<string, string> = {
   "c-span.org": "C-SPAN",
   "rev.com": "Rev (transcript archive)",
   "factba.se": "Factbase (transcript archive)",
+  "x.com": "X",
+  "twitter.com": "X",
+  "threads.net": "Threads",
+  "truthsocial.com": "Truth Social",
   "reuters.com": "Reuters",
   "apnews.com": "Associated Press",
   "bbc.co.uk": "BBC",
@@ -228,6 +243,7 @@ function titleCaseFromHost(host: string): string {
  * icon and label in the Source Drawer; not part of the confidence score.
  */
 export function inferSourceType(url: string, title: string, tier: TrustTier): SourceType {
+  if (tier === "social-post") return "post";
   const t = title.toLowerCase();
   if (/\btranscript\b/.test(t)) return "transcript";
   if (/\bvote|roll call\b/.test(t)) return "vote-record";

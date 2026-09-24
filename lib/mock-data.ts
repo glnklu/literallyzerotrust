@@ -2,11 +2,11 @@
 // MOCK / PREVIEW DATA
 // -----------------------------------------------------------------------------
 // Step 1 of the build is a frontend layout prototype. Nothing here is a live
-// retrieval result. Positions summarized below are paraphrased from
-// well-documented, widely reported public record (trade policy statements,
-// the Feb 2024 £28bn green investment scale-back, the 2023 AI open letter,
-// etc.) but exact wording, dates, and links are illustrative placeholders —
-// Step 2 replaces this whole module with real search + citation retrieval.
+// retrieval result. Quotes below are illustrative placeholders written to
+// match the general, widely reported shape of each figure's public record —
+// exact wording, dates, and links are not real transcripts. The live
+// pipeline (lib/pipeline/*) replaces this whole module with real search +
+// citation retrieval.
 // -----------------------------------------------------------------------------
 
 import { Globe2, Landmark, Cpu, History } from "lucide-react";
@@ -16,11 +16,8 @@ import { FIGURES, toAnswerFigure } from "@/lib/figures";
 export type {
   SourceType,
   Source,
-  ThemeSection,
   Quote,
-  Stance,
-  StancePoint,
-  StanceShift,
+  VerificationMethod,
   Figure,
   Answer,
   PromptCategory,
@@ -49,6 +46,33 @@ const harris = figureById("harris");
 
 const trumpSources: Source[] = [
   {
+    id: "src-trump-4",
+    title: "Proclamation Adjusting Imports of Steel and Aluminum",
+    publisher: "Federal Register",
+    date: "2018-03-08",
+    type: "press-release",
+    url: "#preview-source-federal-register",
+    confidence: 99,
+  },
+  {
+    id: "src-trump-3",
+    title: "Interview on European Trade Deficits",
+    publisher: "Fox News Sunday (transcript)",
+    date: "2024-11-03",
+    type: "interview",
+    url: "#preview-source-network-interview-transcript",
+    confidence: 88,
+  },
+  {
+    id: "src-trump-5",
+    title: "Post on Tariff Policy Toward the EU",
+    publisher: "X",
+    date: "2025-01-15",
+    type: "post",
+    url: "#preview-source-x-post",
+    confidence: 80,
+  },
+  {
     id: "src-trump-1",
     title: "Remarks on Reciprocal Trade and European Tariffs",
     publisher: "White House Press Office (transcript)",
@@ -67,24 +91,6 @@ const trumpSources: Source[] = [
     confidence: 93,
     timestamp: "18:42",
   },
-  {
-    id: "src-trump-3",
-    title: "Interview on European Trade Deficits",
-    publisher: "Fox News Sunday (transcript)",
-    date: "2024-11-03",
-    type: "interview",
-    url: "#preview-source-network-interview-transcript",
-    confidence: 88,
-  },
-  {
-    id: "src-trump-4",
-    title: "Proclamation Adjusting Imports of Steel and Aluminum",
-    publisher: "Federal Register",
-    date: "2018-03-08",
-    type: "press-release",
-    url: "#preview-source-federal-register",
-    confidence: 99,
-  },
 ];
 
 const answerTrump: Answer = {
@@ -93,65 +99,13 @@ const answerTrump: Answer = {
   figure: trump,
   generatedAt: "2026-09-20T14:02:00Z",
   mode: "preview",
-  summary:
-    "Across public remarks spanning 2018 to 2025, Trump has consistently framed EU trade practices as unfair to U.S. manufacturers and has repeatedly used or threatened tariffs — first on steel and aluminum, later expanding to autos and a broader 'reciprocal tariff' framework — as leverage to renegotiate terms.",
-  themes: [
-    {
-      id: "theme-1",
-      heading: "Steel & aluminum as the opening move",
-      claims: [
-        {
-          id: "claim-1-1",
-          text: "Beginning with the 2018 Section 232 proclamation, tariffs on steel and aluminum imports were framed as a national-security and manufacturing-jobs measure.",
-          sourceIds: ["src-trump-4"],
-        },
-        {
-          id: "claim-1-2",
-          text: "The EU was named specifically as a trade partner running a persistent surplus with the U.S.",
-          sourceIds: ["src-trump-4"],
-        },
-      ],
-    },
-    {
-      id: "theme-2",
-      heading: "'Reciprocal tariffs' as the 2025 framework",
-      claims: [
-        {
-          id: "claim-2-1",
-          text: "In 2025 remarks, the administration described a shift from targeted product tariffs to a broader reciprocal-tariff structure.",
-          sourceIds: ["src-trump-1"],
-        },
-        {
-          id: "claim-2-2",
-          text: "That framework was described as matching U.S. import duties to what trading partners, including the EU, charge on American goods.",
-          sourceIds: ["src-trump-2"],
-        },
-      ],
-    },
-    {
-      id: "theme-3",
-      heading: "Autos named as a recurring flashpoint",
-      claims: [
-        {
-          id: "claim-3-1",
-          text: "European auto exports are cited repeatedly as an example of an imbalance — the stated U.S. tariff on European cars versus the EU tariff on American cars.",
-          sourceIds: ["src-trump-2"],
-        },
-        {
-          id: "claim-3-2",
-          text: "That gap is used to argue that existing terms disadvantage U.S. manufacturers.",
-          sourceIds: ["src-trump-3"],
-        },
-      ],
-    },
-  ],
   quotes: [
     {
       id: "q-trump-1",
-      text: "The Union has treated us very unfairly on trade for a long time, and that changes now.",
-      date: "2025-02-13",
-      context: "Remarks announcing the reciprocal tariff framework",
-      sourceId: "src-trump-1",
+      text: "This is not merely an economic issue. We must not let our country, or its companies and workers, be taken advantage of.",
+      date: "2018-03-08",
+      context: "Proclamation adjusting imports of steel and aluminum",
+      sourceId: "src-trump-4",
       verified: true,
       verificationMethod: "snippet",
     },
@@ -164,9 +118,37 @@ const answerTrump: Answer = {
       verified: true,
       verificationMethod: "snippet",
     },
+    {
+      id: "q-trump-3",
+      text: "Tariffs are a beautiful thing, and Europe is going to finally pay its fair share.",
+      date: "2025-01-15",
+      context: "Post on X",
+      sourceId: "src-trump-5",
+      verified: true,
+      verificationMethod: "snippet",
+    },
+    {
+      id: "q-trump-4",
+      text: "The Union has treated us very unfairly on trade for a long time, and that changes now.",
+      date: "2025-02-13",
+      context: "Remarks announcing the reciprocal tariff framework",
+      sourceId: "src-trump-1",
+      verified: true,
+      verificationMethod: "snippet",
+    },
+    {
+      id: "q-trump-5",
+      text: "We pay two and a half percent, they charge us ten percent on our cars, and that's not fair to our autoworkers.",
+      date: "2025-03-26",
+      context: "Joint press conference on auto and steel tariff policy",
+      sourceId: "src-trump-2",
+      verified: true,
+      verificationMethod: "full-page",
+    },
   ],
+  summary:
+    "Across a 2018 proclamation, an interview, a post, and two 2025 press events, Trump has repeatedly framed EU trade terms as unfair to U.S. manufacturers and autoworkers, and has used or threatened tariffs — first on steel and aluminum, later autos — as leverage to renegotiate them.",
   sources: trumpSources,
-  stanceShift: undefined,
   relatedPrompts: [
     "How has the European Union responded to these tariff threats?",
     "What do U.S. manufacturers say about the 2018 steel tariffs in hindsight?",
@@ -176,7 +158,7 @@ const answerTrump: Answer = {
 };
 
 // ---------------------------------------------------------------------------
-// Answer 2 — Starmer / green energy (stance shift showcase)
+// Answer 2 — Starmer / green energy
 // ---------------------------------------------------------------------------
 
 const starmerSources: Source[] = [
@@ -224,58 +206,6 @@ const answerStarmer: Answer = {
   figure: starmer,
   generatedAt: "2026-09-20T14:05:00Z",
   mode: "preview",
-  summary:
-    "The headline commitment — a large-scale, state-backed green investment plan — has been publicly scaled back once on cost grounds since 2021, while the underlying policy goal (a clean-power grid and a public energy company) has remained and was reaffirmed after entering government.",
-  themes: [
-    {
-      id: "theme-1",
-      heading: "2021: a specific, large annual figure",
-      claims: [
-        {
-          id: "claim-1-1",
-          text: "The original 'Green Prosperity Plan' was framed around a headline £28bn-per-year public investment figure.",
-          sourceIds: ["src-starmer-1"],
-        },
-        {
-          id: "claim-1-2",
-          text: "It was positioned as transformative industrial policy tied to jobs in green manufacturing.",
-          sourceIds: ["src-starmer-1"],
-        },
-      ],
-    },
-    {
-      id: "theme-2",
-      heading: "2024: the figure is dropped, framed as fiscal discipline",
-      claims: [
-        {
-          id: "claim-2-1",
-          text: "Ahead of the general election, the £28bn figure was explicitly abandoned, attributed to changed economic conditions and a commitment to strict fiscal rules.",
-          sourceIds: ["src-starmer-2"],
-        },
-        {
-          id: "claim-2-2",
-          text: "The broader ambition was described as unchanged even as the specific number was removed.",
-          sourceIds: ["src-starmer-2"],
-        },
-      ],
-    },
-    {
-      id: "theme-3",
-      heading: "2024–present: the policy vehicle persists as GB Energy",
-      claims: [
-        {
-          id: "claim-3-1",
-          text: "In government, the publicly-owned energy company Great British Energy was launched.",
-          sourceIds: ["src-starmer-3"],
-        },
-        {
-          id: "claim-3-2",
-          text: "A 2030 clean-power target was separately restated, without reviving the original spending figure.",
-          sourceIds: ["src-starmer-4"],
-        },
-      ],
-    },
-  ],
   quotes: [
     {
       id: "q-starmer-1",
@@ -304,41 +234,19 @@ const answerStarmer: Answer = {
       verified: true,
       verificationMethod: "full-page",
     },
+    {
+      id: "q-starmer-4",
+      text: "This mission was never about a single number, it is about a clean power system by 2030 that we will deliver.",
+      date: "2024-12-13",
+      context: "House of Commons statement on Clean Power 2030",
+      sourceId: "src-starmer-4",
+      verified: true,
+      verificationMethod: "snippet",
+    },
   ],
+  summary:
+    "Starmer's public statements show the original £28bn-a-year green investment pledge introduced in 2021, publicly dropped in early 2024 citing fiscal rules, and replaced — without reviving the figure — by the Great British Energy company and a reaffirmed 2030 clean-power target.",
   sources: starmerSources,
-  stanceShift: {
-    topic: "£28bn-per-year green investment pledge",
-    points: [
-      {
-        date: "2021-09-27",
-        label: "Pledge introduced",
-        summary: "Commits to £28bn/year in green investment as a headline manifesto-shaping figure.",
-        stance: "for",
-        sourceId: "src-starmer-1",
-      },
-      {
-        date: "2024-02-08",
-        label: "Figure abandoned",
-        summary: "Publicly drops the £28bn figure, citing fiscal rules and changed economic conditions.",
-        stance: "mixed",
-        sourceId: "src-starmer-2",
-      },
-      {
-        date: "2024-07-25",
-        label: "Policy vehicle relaunched without the figure",
-        summary: "Launches GB Energy as the delivery mechanism for the same underlying goal, no spending number restated.",
-        stance: "neutral",
-        sourceId: "src-starmer-3",
-      },
-      {
-        date: "2024-12-13",
-        label: "2030 target reaffirmed in Parliament",
-        summary: "Restates a clean-power-by-2030 goal in a Commons statement.",
-        stance: "for",
-        sourceId: "src-starmer-4",
-      },
-    ],
-  },
   relatedPrompts: [
     "What did UK energy industry groups say about dropping the £28bn pledge?",
     "How does Clean Power 2030 compare to the original 2021 plan in scope?",
@@ -362,15 +270,6 @@ const muskSources: Source[] = [
     confidence: 94,
   },
   {
-    id: "src-musk-2",
-    title: "Testimony to Senate AI Insight Forum",
-    publisher: "U.S. Senate (transcript)",
-    date: "2023-09-13",
-    type: "transcript",
-    url: "#preview-source-senate-forum-transcript",
-    confidence: 92,
-  },
-  {
     id: "src-musk-3",
     title: "Interview on xAI's Founding Rationale",
     publisher: "Interview, tech press (transcript)",
@@ -378,6 +277,15 @@ const muskSources: Source[] = [
     type: "interview",
     url: "#preview-source-tech-press-interview",
     confidence: 85,
+  },
+  {
+    id: "src-musk-2",
+    title: "Testimony to Senate AI Insight Forum",
+    publisher: "U.S. Senate (transcript)",
+    date: "2023-09-13",
+    type: "transcript",
+    url: "#preview-source-senate-forum-transcript",
+    confidence: 92,
   },
   {
     id: "src-musk-4",
@@ -397,65 +305,13 @@ const answerMusk: Answer = {
   figure: musk,
   generatedAt: "2026-09-20T14:08:00Z",
   mode: "preview",
-  summary:
-    "Musk has publicly described advanced AI as a significant risk warranting external oversight — including signing a call for a development pause and testifying in favor of regulation — while simultaneously founding and scaling an AI company, a tension he has addressed directly in interviews as 'safer to build it than let others build it unsupervised.'",
-  themes: [
-    {
-      id: "theme-1",
-      heading: "Public calls for a pause and oversight",
-      claims: [
-        {
-          id: "claim-1-1",
-          text: "In 2023, Musk was a signatory to an open letter calling for a six-month pause on training AI systems more powerful than a named threshold.",
-          sourceIds: ["src-musk-1"],
-        },
-        {
-          id: "claim-1-2",
-          text: "He separately testified to lawmakers in favor of a regulatory body for frontier AI.",
-          sourceIds: ["src-musk-2"],
-        },
-      ],
-    },
-    {
-      id: "theme-2",
-      heading: "Founding xAI as a stated safety rationale",
-      claims: [
-        {
-          id: "claim-2-1",
-          text: "Shortly after signing the pause letter, Musk founded xAI.",
-          sourceIds: ["src-musk-3"],
-        },
-        {
-          id: "claim-2-2",
-          text: "He explained the decision in interviews as motivated by wanting a 'maximally truth-seeking' alternative in the field rather than ceding development entirely to other labs.",
-          sourceIds: ["src-musk-3"],
-        },
-      ],
-    },
-    {
-      id: "theme-3",
-      heading: "International summit engagement",
-      claims: [
-        {
-          id: "claim-3-1",
-          text: "Musk participated in the UK's 2023 AI Safety Summit.",
-          sourceIds: ["src-musk-4"],
-        },
-        {
-          id: "claim-3-2",
-          text: "He used the platform to reiterate concerns about existential-level risk from unregulated frontier models.",
-          sourceIds: ["src-musk-4"],
-        },
-      ],
-    },
-  ],
   quotes: [
     {
       id: "q-musk-1",
-      text: "I think AI is more dangerous than, say, mismanaged aircraft design, and we do need a regulator.",
-      date: "2023-09-13",
-      context: "Testimony to the Senate AI Insight Forum",
-      sourceId: "src-musk-2",
+      text: "We call on all AI labs to immediately pause for at least six months the training of AI systems more powerful than the current state of the art.",
+      date: "2023-03-22",
+      context: "Open letter he signed calling for a pause in advanced AI development",
+      sourceId: "src-musk-1",
       verified: true,
       verificationMethod: "snippet",
     },
@@ -468,9 +324,28 @@ const answerMusk: Answer = {
       verified: false,
       verificationMethod: "unverified",
     },
+    {
+      id: "q-musk-3",
+      text: "I think AI is more dangerous than, say, mismanaged aircraft design, and we do need a regulator.",
+      date: "2023-09-13",
+      context: "Testimony to the Senate AI Insight Forum",
+      sourceId: "src-musk-2",
+      verified: true,
+      verificationMethod: "snippet",
+    },
+    {
+      id: "q-musk-4",
+      text: "If I were to guess what the biggest threat to humanity is, or the biggest risk, it's probably that.",
+      date: "2023-11-02",
+      context: "Remarks at the UK AI Safety Summit",
+      sourceId: "src-musk-4",
+      verified: true,
+      verificationMethod: "full-page",
+    },
   ],
+  summary:
+    "Across a signed 2023 open letter, an interview, Senate testimony, and remarks at the UK's AI Safety Summit, Musk has described advanced AI as a major risk warranting outside regulation, while also framing his own AI company as a safer alternative to leaving frontier development to others.",
   sources: muskSources,
-  stanceShift: undefined,
   relatedPrompts: [
     "What do AI safety researchers say about Musk founding a competing lab?",
     "How has the tech industry responded to calls for a development pause?",
@@ -485,15 +360,6 @@ const answerMusk: Answer = {
 
 const harrisSources: Source[] = [
   {
-    id: "src-harris-1",
-    title: "Remarks at the UK AI Safety Summit",
-    publisher: "The White House (official transcript)",
-    date: "2023-11-01",
-    type: "transcript",
-    url: "#preview-source-white-house-summit-remarks",
-    confidence: 96,
-  },
-  {
     id: "src-harris-2",
     title: "Remarks on the Executive Order on Safe, Secure, and Trustworthy AI",
     publisher: "White House Press Office (transcript)",
@@ -501,6 +367,15 @@ const harrisSources: Source[] = [
     type: "transcript",
     url: "#preview-source-white-house-eo-remarks",
     confidence: 97,
+  },
+  {
+    id: "src-harris-1",
+    title: "Remarks at the UK AI Safety Summit",
+    publisher: "The White House (official transcript)",
+    date: "2023-11-01",
+    type: "transcript",
+    url: "#preview-source-white-house-summit-remarks",
+    confidence: 96,
   },
   {
     id: "src-harris-3",
@@ -528,61 +403,18 @@ const answerHarris: Answer = {
   figure: harris,
   generatedAt: "2026-09-20T14:11:00Z",
   mode: "preview",
-  summary:
-    "As Vice President, Harris framed AI regulation around both near-term, concrete harms — algorithmic bias, disinformation, fraud — and longer-term frontier-model risk, and publicly represented the administration's two main 2023 actions: an executive order requiring safety testing from frontier developers, and a newly announced U.S. AI Safety Institute.",
-  themes: [
-    {
-      id: "theme-1",
-      heading: "Distinguishing near-term harms from existential risk",
-      claims: [
-        {
-          id: "claim-1-1",
-          text: "At the UK's 2023 AI Safety Summit, Harris argued that AI safety discussions should not focus solely on long-term, catastrophic risk.",
-          sourceIds: ["src-harris-1"],
-        },
-        {
-          id: "claim-1-2",
-          text: "She pointed to present-day harms — biased lending or hiring algorithms, disinformation, and fraud — as safety issues deserving equal attention.",
-          sourceIds: ["src-harris-1", "src-harris-4"],
-        },
-      ],
-    },
-    {
-      id: "theme-2",
-      heading: "The AI executive order as the domestic action",
-      claims: [
-        {
-          id: "claim-2-1",
-          text: "She delivered remarks alongside the administration's October 2023 executive order on AI.",
-          sourceIds: ["src-harris-2"],
-        },
-        {
-          id: "claim-2-2",
-          text: "That order was described as requiring frontier AI developers to share safety test results with the federal government before public release.",
-          sourceIds: ["src-harris-2"],
-        },
-      ],
-    },
-    {
-      id: "theme-3",
-      heading: "A new federal body to operationalize AI safety",
-      claims: [
-        {
-          id: "claim-3-1",
-          text: "Harris announced the creation of the U.S. AI Safety Institute during the same UK summit trip.",
-          sourceIds: ["src-harris-3"],
-        },
-        {
-          id: "claim-3-2",
-          text: "The institute was framed as the body responsible for developing testing and evaluation standards for AI systems.",
-          sourceIds: ["src-harris-3"],
-        },
-      ],
-    },
-  ],
   quotes: [
     {
       id: "q-harris-1",
+      text: "We simply cannot wait for international consensus before we act, so today the President signed an executive order for the safe, secure, and trustworthy development of AI.",
+      date: "2023-10-30",
+      context: "Remarks on the AI executive order",
+      sourceId: "src-harris-2",
+      verified: true,
+      verificationMethod: "full-page",
+    },
+    {
+      id: "q-harris-2",
       text: "When a woman is denied a business loan because of a biased AI algorithm, that is a threat to her safety too.",
       date: "2023-11-01",
       context: "Remarks at the UK AI Safety Summit",
@@ -591,17 +423,27 @@ const answerHarris: Answer = {
       verificationMethod: "snippet",
     },
     {
-      id: "q-harris-2",
-      text: "We simply cannot wait for international consensus before we act, so today the President signed an executive order for the safe, secure, and trustworthy development of AI.",
-      date: "2023-10-30",
-      context: "Remarks on the AI executive order",
-      sourceId: "src-harris-2",
+      id: "q-harris-3",
+      text: "Today we are launching the United States AI Safety Institute to lead the world in the safe and responsible development of AI.",
+      date: "2023-11-01",
+      context: "Announcing the U.S. AI Safety Institute",
+      sourceId: "src-harris-3",
       verified: true,
-      verificationMethod: "full-page",
+      verificationMethod: "snippet",
+    },
+    {
+      id: "q-harris-4",
+      text: "AI being used to manipulate what people see and believe has to be part of any serious conversation about safety.",
+      date: "2023-11-03",
+      context: "Interview on AI and algorithmic bias",
+      sourceId: "src-harris-4",
+      verified: true,
+      verificationMethod: "snippet",
     },
   ],
+  summary:
+    "During an early-November 2023 trip capped by the UK AI Safety Summit, Harris publicly tied the administration's AI executive order and the newly announced U.S. AI Safety Institute to both near-term harms like biased lending algorithms and disinformation, and longer-term frontier-model risk.",
   sources: harrisSources,
-  stanceShift: undefined,
   relatedPrompts: [
     "How did other countries respond to the U.S. AI Safety Institute announcement?",
     "What does the AI executive order require of frontier AI developers?",

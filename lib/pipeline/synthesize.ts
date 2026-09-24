@@ -1,19 +1,22 @@
 // -----------------------------------------------------------------------------
-// SYNTHESIS: neutral, citation-only extraction
+// SYNTHESIS: quotes-only, citation-backed extraction
 // -----------------------------------------------------------------------------
 // This is where the app's core promise is enforced in the prompt itself:
 // Claude sees ONLY the retrieved documents (never its own training-data
-// knowledge of the figure), must cite every claim back to a provided
-// document id, and must say so plainly when the evidence is too thin rather
-// than produce a confident-sounding answer anyway.
+// knowledge of the figure), extracts verbatim quotes rather than writing a
+// paraphrased narrative, and must say so plainly when the evidence is too
+// thin rather than produce a confident-sounding answer anyway.
+//
+// The answer is quotes first, summary second — both in what's shown (see
+// components/answer/answer-view.tsx) and in how the model is asked to work:
+// pick the quotes, THEN summarize what they show, never the reverse. A
+// summary written first would just be an ungrounded paraphrase that quotes
+// get cherry-picked to support afterward.
 //
 // Structured output is forced via tool use (not "please respond in JSON"),
 // and the result is re-validated against a zod schema *and* cross-checked
 // against the actual set of retrieved document ids — anything citing an id
-// that doesn't exist is dropped rather than trusted. This is intentionally
-// defensive even though Step 3 is where a fuller citation/verification
-// engine lands; a synthesis step that can silently hallucinate a citation
-// isn't acceptable to ship even as a first cut.
+// that doesn't exist is dropped rather than trusted.
 // -----------------------------------------------------------------------------
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -23,50 +26,25 @@ import type { RetrievedDocument } from "@/lib/pipeline/retrieve";
 const DEFAULT_MODEL = "claude-sonnet-5";
 const MAX_SNIPPET_CHARS = 800;
 
-const SYSTEM_PROMPT = `You are the synthesis engine for "literallyzerotrust", a transparency tool that reports what a named public figure has actually said about a topic — using ONLY the source documents supplied in this request.
+const SYSTEM_PROMPT = `You are the synthesis engine for "literallyzerotrust", a transparency tool that reports what a named public figure has actually said about a topic — in their own words, using ONLY the source documents supplied in this request.
 
 Hard rules, no exceptions:
 1. Use only the content inside the provided <documents>. Never draw on outside knowledge of what this figure has said, believes, or has been reported to believe elsewhere. If your training data "remembers" something relevant that isn't in the documents, ignore it.
-2. Never state or imply a political, moral, or factual judgment about the figure's position. Do not use evaluative language (e.g. "concerning", "admirable", "extreme", "reasonable", "hypocritical", "flip-flopped"). Describe what was said and when; let the reader judge it.
-3. Write each theme as a list of individual sentence-level "claims", not one paragraph. Each claim is exactly one sentence, and each claim cites the specific document id(s) that support THAT sentence — not a single citation list for the whole theme. If one sentence draws on two documents, cite both; if a heading needs three sentences to explain, that's three claims, each separately cited. Never invent a document id, a quote, a date, or a source not present in <documents>.
-4. Quotes must be copied verbatim from a document's content. If no document contains a clean, quotable verbatim sentence on this topic, leave "quotes" empty rather than paraphrasing something as if it were quoted.
-5. If the documents show the figure's position changing, softening, reversing, or being restated differently over time, populate "stanceShift" with a neutral chronological sequence of at least two points. State what changed and when — never label either position as the "real" or "true" one.
-6. If, after reviewing every document, there isn't enough material to actually answer what this figure said on this specific topic (documents are off-topic, about a different person, too thin, or contradictory in a way you can't responsibly summarize), set "insufficientEvidence" to true, give one plain-language sentence in "insufficientReason", and leave "themes"/"quotes" empty. Do not stretch unrelated material into an answer.
-7. "relatedPrompts" are natural follow-up questions grounded in the answer you just gave (e.g. what critics, allies, or an affected country/industry have said about the same topic) — not generic filler.
+2. The answer is built entirely from direct quotes — never a paraphrased narrative. A quote must be copied verbatim from a document that is itself the figure's own words: a social media post, an interview transcript, an official statement, remarks, or testimony. Never quote a journalist's or third party's paraphrase or summary of what the figure said, even if it's presented in quotation marks by that source.
+3. Never state or imply a political, moral, or factual judgment about the figure's position, in a quote's context line or in the summary. Do not use evaluative language (e.g. "concerning", "admirable", "extreme", "reasonable", "hypocritical", "flip-flopped"). Describe what was said and when; let the reader judge it.
+4. Select quotes first, in chronological order by date. Only after choosing them, write "summary" — 1 to 3 plain sentences describing what the selected quotes, taken together, show. The summary must be grounded strictly in the quotes you picked; it is a recap of them, not a separate analysis with its own claims or sources.
+5. If no document contains a clean, quotable verbatim first-source statement on this topic, leave "quotes" empty rather than paraphrasing something as if it were quoted. Never invent a document id, a quote, a date, or a source not present in <documents>.
+6. If, after reviewing every document, there isn't enough material to actually answer what this figure said on this specific topic (documents are off-topic, about a different person, too thin, or not the figure's own words), set "insufficientEvidence" to true, give one plain-language sentence in "insufficientReason", and leave "quotes" empty.
+7. "relatedPrompts" are natural follow-up questions grounded in the quotes you just selected (e.g. what critics, allies, or an affected country/industry have said about the same topic) — not generic filler.
 8. Write in a neutral, factual register throughout, like a wire-service reporter, not an opinion column.
 
 Respond only by calling the emit_answer tool.`;
-
-const stancePointSchema = z.object({
-  date: z.string(),
-  label: z.string(),
-  summary: z.string(),
-  stance: z.enum(["for", "against", "mixed", "neutral"]),
-  sourceId: z.string(),
-});
 
 const answerCoreSchema = z.object({
   figureName: z.string(),
   figureRole: z.string(),
   insufficientEvidence: z.boolean().optional().default(false),
   insufficientReason: z.string().optional(),
-  summary: z.string().optional().default(""),
-  themes: z
-    .array(
-      z.object({
-        heading: z.string(),
-        claims: z
-          .array(
-            z.object({
-              text: z.string(),
-              sourceIds: z.array(z.string()).min(1),
-            })
-          )
-          .min(1),
-      })
-    )
-    .optional()
-    .default([]),
   quotes: z
     .array(
       z.object({
@@ -78,12 +56,7 @@ const answerCoreSchema = z.object({
     )
     .optional()
     .default([]),
-  stanceShift: z
-    .object({
-      topic: z.string(),
-      points: z.array(stancePointSchema).min(2),
-    })
-    .optional(),
+  summary: z.string().optional().default(""),
   relatedPrompts: z.array(z.string()).optional().default([]),
 });
 
@@ -91,7 +64,7 @@ export type SynthesizedCore = z.infer<typeof answerCoreSchema>;
 
 const EMIT_ANSWER_TOOL: Anthropic.Tool = {
   name: "emit_answer",
-  description: "Emit the neutral, citation-backed answer synthesized from the provided documents.",
+  description: "Emit the quotes-only, citation-backed answer synthesized from the provided documents.",
   strict: true,
   input_schema: {
     type: "object",
@@ -103,72 +76,27 @@ const EMIT_ANSWER_TOOL: Anthropic.Tool = {
         description: "True if the documents don't actually support an answer on this topic.",
       },
       insufficientReason: { type: "string", description: "One sentence explaining why, if insufficientEvidence is true." },
-      summary: { type: "string", description: "2-4 sentence neutral overview of the figure's documented position." },
-      themes: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            heading: { type: "string" },
-            claims: {
-              type: "array",
-              description: "One entry per sentence. Do not merge multiple sentences into one claim.",
-              items: {
-                type: "object",
-                properties: {
-                  text: { type: "string", description: "Exactly one sentence." },
-                  sourceIds: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Document id(s) that specifically support this sentence.",
-                  },
-                },
-                required: ["text", "sourceIds"],
-                additionalProperties: false,
-              },
-            },
-          },
-          required: ["heading", "claims"],
-          additionalProperties: false,
-        },
-      },
       quotes: {
         type: "array",
+        description: "Verbatim first-source quotes, chosen first and in chronological order.",
         items: {
           type: "object",
           properties: {
-            text: { type: "string", description: "Verbatim excerpt copied from a document's content." },
+            text: {
+              type: "string",
+              description: "Verbatim excerpt copied from a document's content — must be the figure's own words, never a third party's paraphrase.",
+            },
             date: { type: "string" },
-            context: { type: "string", description: "Where/when it was said." },
+            context: { type: "string", description: "Where/when it was said, e.g. 'Post on X' or 'Interview on Fox News Sunday'." },
             sourceId: { type: "string" },
           },
           required: ["text", "date", "context", "sourceId"],
           additionalProperties: false,
         },
       },
-      stanceShift: {
-        type: "object",
-        description: "Only include if the documents show a genuine change over time.",
-        properties: {
-          topic: { type: "string" },
-          points: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                date: { type: "string" },
-                label: { type: "string" },
-                summary: { type: "string" },
-                stance: { type: "string", enum: ["for", "against", "mixed", "neutral"] },
-                sourceId: { type: "string" },
-              },
-              required: ["date", "label", "summary", "stance", "sourceId"],
-              additionalProperties: false,
-            },
-          },
-        },
-        required: ["topic", "points"],
-        additionalProperties: false,
+      summary: {
+        type: "string",
+        description: "1-3 sentences recapping what the selected quotes show, written after the quotes are chosen. No claims beyond what the quotes themselves support.",
       },
       relatedPrompts: { type: "array", items: { type: "string" } },
     },
@@ -258,7 +186,7 @@ export async function synthesizeAnswer(input: SynthesisInput): Promise<Synthesis
 
   const data = enforceCitationIntegrity(parsed.data, input.documents);
 
-  if (data.insufficientEvidence || (data.themes.length === 0 && data.quotes.length === 0)) {
+  if (data.insufficientEvidence || data.quotes.length === 0) {
     return {
       status: "insufficient_evidence",
       reason: data.insufficientReason || "The retrieved sources don't clearly cover this question.",
@@ -269,35 +197,16 @@ export async function synthesizeAnswer(input: SynthesisInput): Promise<Synthesis
 }
 
 /**
- * Defense in depth: drop any sentence that cites a document id we didn't
- * actually retrieve, at the individual claim level. The model is instructed
- * never to do this, but the UI's entire trust model depends on every
- * sentence's citation resolving to a real source, so it's re-checked in
- * code rather than taken on faith. A theme that loses all its claims this
- * way is dropped entirely rather than shown as an empty heading.
+ * Defense in depth: drop any quote that cites a document id we didn't
+ * actually retrieve. The model is instructed never to do this, but the UI's
+ * entire trust model depends on every quote's citation resolving to a real
+ * source, so it's re-checked in code rather than taken on faith.
  */
 function enforceCitationIntegrity(
   data: SynthesizedCore,
   documents: RetrievedDocument[]
 ): SynthesizedCore {
   const validIds = new Set(documents.map((d) => d.id));
-
-  const themes = data.themes
-    .map((t) => ({
-      ...t,
-      claims: t.claims
-        .map((c) => ({ ...c, sourceIds: c.sourceIds.filter((id) => validIds.has(id)) }))
-        .filter((c) => c.sourceIds.length > 0),
-    }))
-    .filter((t) => t.claims.length > 0);
-
   const quotes = data.quotes.filter((q) => validIds.has(q.sourceId));
-
-  let stanceShift = data.stanceShift;
-  if (stanceShift) {
-    const points = stanceShift.points.filter((p) => validIds.has(p.sourceId));
-    stanceShift = points.length >= 2 ? { ...stanceShift, points } : undefined;
-  }
-
-  return { ...data, themes, quotes, stanceShift };
+  return { ...data, quotes };
 }

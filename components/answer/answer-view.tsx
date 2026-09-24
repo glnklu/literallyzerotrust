@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { AnswerHeader } from "@/components/answer/answer-header";
-import { ThemeSummary } from "@/components/answer/theme-summary";
 import { QuoteBlock } from "@/components/answer/quote-block";
-import { StanceShiftTimeline } from "@/components/answer/stance-shift";
+import { AnswerSummary } from "@/components/answer/answer-summary";
 import { RelatedPrompts } from "@/components/answer/related-prompts";
 import { SourceDrawer } from "@/components/answer/source-drawer";
 import type { Answer } from "@/lib/types";
@@ -35,11 +34,8 @@ export function AnswerView({ answer, onSelectRelated }: AnswerViewProps) {
 
         <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
           <div className="space-y-6">
-            <ThemeSummary answer={answer} onOpenSource={openSource} activeSourceId={activeSourceId} />
             <QuoteBlock answer={answer} onOpenSource={openSource} activeSourceId={activeSourceId} />
-            {answer.stanceShift && (
-              <StanceShiftTimeline answer={answer} onOpenSource={openSource} activeSourceId={activeSourceId} />
-            )}
+            <AnswerSummary answer={answer} />
           </div>
 
           <div className="lg:sticky lg:top-24 lg:self-start">

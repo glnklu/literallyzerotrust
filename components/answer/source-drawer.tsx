@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { X, ExternalLink, FileText, Video, Megaphone, Vote, Mic } from "lucide-react";
+import { X, ExternalLink, FileText, Video, Megaphone, Vote, Mic, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Answer, Source, SourceType } from "@/lib/mock-data";
 import { SourceTypeLabel } from "@/components/source-chip";
@@ -19,6 +19,7 @@ const typeIcon: Record<SourceType, React.ElementType> = {
   "press-release": Megaphone,
   "vote-record": Vote,
   interview: Mic,
+  post: MessageCircle,
 };
 
 function confidenceColor(score: number) {

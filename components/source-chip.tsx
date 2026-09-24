@@ -9,6 +9,7 @@ const typeLabel: Record<Source["type"], string> = {
   "press-release": "Release",
   "vote-record": "Vote",
   interview: "Interview",
+  post: "Post",
 };
 
 interface SourceChipProps {
